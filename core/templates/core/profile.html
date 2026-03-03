@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3 class="mb-3">My comments</h3>
+
+  {% for comment in comments %}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="small text-muted mb-1">
+          {{ comment.country.name }}
+          ·
+          {{ comment.created_at|date:"d M Y H:i" }}
+        </div>
+
+        <p class="mb-2">{{ comment.text }}</p>
+
+        <a
+          href="{% url 'country_detail' comment.country.slug %}"
+          class="btn btn-sm btn-outline-primary"
+        >
+          View country
+        </a>
+
+        <a
+          href="{% url 'edit_comment' comment.id %}"
+          class="btn btn-sm btn-outline-secondary ms-1"
+        >
+          Edit
+        </a>
+
+        <form
+          method="post"
+          action="{% url 'delete_comment' comment.id %}"
+          class="d-inline ms-1"
+        >
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-danger">
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted">You haven’t written any comments yet.</p>
+  {% endfor %}
+{% endblock %}
