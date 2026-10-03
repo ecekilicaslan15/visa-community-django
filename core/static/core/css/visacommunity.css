@@ -504,3 +504,56 @@ footer.site a{ color:#D6DEE6; }
 .country-desc{ max-width:44rem; }
 .coming-soon{ font-size:.9rem; color:var(--muted); }
 .coming-soon b{ color:var(--navy); display:block; font-family:var(--font-display); font-size:1.05rem; margin-bottom:.2rem; }
+.sticker.sm{ width:38px; height:38px; font-size:.78rem; border-radius:9px; }
+.sticker.sm::after{ inset:2.5px; border-radius:6.5px; }
+
+.chip-reject{ background:var(--reject-tint); color:var(--reject); }
+
+.cascade-ladder{
+  display:flex; align-items:flex-start; gap:.9rem; flex-wrap:wrap;
+}
+.cascade-step{ text-align:center; }
+.cascade-step .pass-label{ margin-top:.5rem; max-width:9rem; }
+.cascade-arrow{
+  font-family:var(--font-mono); color:var(--muted); font-size:1.1rem;
+  align-self:flex-start; padding-top:.35rem;
+}
+
+.table-scroll{ overflow-x:auto; }
+.ledger{ width:100%; border-collapse:collapse; min-width:760px; }
+.ledger th{
+  font-family:var(--font-mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; text-align:left;
+  padding:.8rem 1rem; border-bottom:2px solid var(--line-strong);
+}
+.ledger td{
+  padding:.95rem 1rem; border-bottom:1px dashed var(--line);
+  vertical-align:middle; font-size:.95rem;
+}
+.ledger tr:last-child td{ border-bottom:0; }
+.ledger tbody tr{ transition:background .12s ease; }
+.ledger tbody tr:hover{ background:#FFFDF8; }
+.ledger .country-cell{ display:flex; align-items:center; gap:.75rem; }
+.ledger .country-cell b{ font-family:var(--font-display); font-weight:650; color:var(--navy); }
+.ledger .country-cell span{ display:block; font-size:.8rem; color:var(--muted); }
+.ledger .rate{ display:flex; align-items:center; gap:.6rem; }
+.ledger .rate b{ font-family:var(--font-mono); font-weight:600; font-size:.88rem; color:var(--navy); min-width:3ch; }
+.ledger .rate .meter{ width:88px; margin:0; }
+.ledger .num{ font-family:var(--font-mono); font-size:.88rem; color:var(--muted); }
+
+.filter-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+.filter-row button{
+  border:1px solid var(--line-strong); background:#fff; font:inherit; font-weight:600; font-size:.87rem;
+  color:var(--muted); padding:.42rem 1rem; border-radius:999px; cursor:pointer;
+  transition:all .12s ease;
+}
+.filter-row button:hover{ color:var(--navy); }
+.filter-row button[aria-selected="true"]{ background:var(--navy); border-color:var(--navy); color:#fff; }
+
+.legend{ display:flex; gap:1.2rem; flex-wrap:wrap; font-size:.85rem; color:var(--muted); }
+.legend .chip{ font-size:.78rem; }
+
+/* fixes found while wiring to Django */
+.ledger .country-cell .sticker{ display:inline-flex; }      /* `.country-cell span{display:block}` was overriding it */
+.ledger .country-cell:hover{ text-decoration:none; }
+.hero-buddy .float-stamp.b{ bottom:22%; }                    /* keep the stamp off the caption */

@@ -26,19 +26,37 @@ def _percent(part, whole):
     return round(100 * part / whole) if whole else None
 
 
-def home(request):
+def _countries_with_stats():
+    """Active countries annotated with the numbers the cards and Insights table show."""
     countries = (
         Country.objects.filter(is_active=True)
         .annotate(
-            comment_count=Count("comments"),
-            experience_count=Count("comments", filter=Q(comments__kind=EXPERIENCE)),
+            comment_count=Count("comments", distinct=True),
+            experience_count=Count("comments", filter=Q(comments__kind=EXPERIENCE), distinct=True),
             approved_count=Count(
                 "comments",
                 filter=Q(comments__kind=EXPERIENCE, comments__outcome=APPROVED),
+                distinct=True,
             ),
+            rejected_count=Count(
+                "comments",
+                filter=Q(comments__kind=EXPERIENCE, comments__outcome=Comment.OUTCOME_REJECTED),
+                distinct=True,
+            ),
+            avg_wait=Avg("comments__wait_days", filter=Q(comments__kind=EXPERIENCE)),
+            last_appointment=Max("comments__appointment_date"),
         )
         .order_by("name")
     )
+    return countries
+
+
+def home(request):
+    query = request.GET.get("q", "").strip()
+    countries = _countries_with_stats()
+    if query:
+        countries = countries.filter(name__icontains=query)
+    countries = list(countries)
     for c in countries:
         c.approval_rate = _percent(c.approved_count, c.experience_count)
 
@@ -46,12 +64,43 @@ def home(request):
         experiences=Count("id", filter=Q(kind=EXPERIENCE)),
         questions=Count("id", filter=~Q(kind=EXPERIENCE)),
     )
+    totals["countries"] = Country.objects.filter(is_active=True).count()
+
+    recent = (
+        Comment.objects.filter(country__is_active=True)
+        .select_related("user", "country")
+        .annotate(like_count=Count("likes", distinct=True))
+        .order_by("-created_at")[:3]
+    )
+
+    liked_ids = set()
+    if request.user.is_authenticated:
+        liked_ids = set(request.user.liked_comments.values_list("id", flat=True))
 
     return render(
         request,
         "core/home.html",
-        {"countries": countries, "totals": totals},
+        {
+            "countries": countries,
+            "totals": totals,
+            "query": query,
+            "recent": recent,
+            "liked_ids": liked_ids,
+            "first_country": Country.objects.filter(is_active=True).order_by("name").first(),
+        },
     )
+
+
+def insights(request):
+    countries = list(_countries_with_stats())
+    for c in countries:
+        c.approval_rate = _percent(c.approved_count, c.experience_count)
+        c.avg_wait = round(c.avg_wait) if c.avg_wait is not None else None
+    return render(request, "core/insights.html", {"countries": countries})
+
+
+def design_system(request):
+    return render(request, "core/design_system.html")
 
 
 def country_stats(country):

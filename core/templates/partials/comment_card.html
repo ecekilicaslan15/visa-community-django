@@ -21,7 +21,7 @@
         <div class="who"><b>{{ c.country.name }}</b><span>{% if c.is_experience %}shared{% else %}asked{% endif %} {{ c.created_at|timesince }} ago</span></div>
       {% else %}
         <span class="avatar">{{ c.user.username|slice:":2"|upper }}</span>
-        <div class="who"><b>{{ c.user.username }}</b><span>{{ c.created_at|timesince }} ago</span></div>
+        <div class="who"><b>{{ c.user.username }}</b><span>{% if in_feed %}{{ c.country.name }} · {% if c.is_experience %}shared{% else %}asked{% endif %} {% endif %}{{ c.created_at|timesince }} ago</span></div>
       {% endif %}
       <div class="right">
         {% if c.is_question %}<span class="tag-question">Question</span>
@@ -45,6 +45,8 @@
 
       {% if on_profile %}
         <a href="{% url 'country_detail' c.country.slug %}#c{{ c.id }}">View in {{ c.country.name }} →</a>
+      {% elif in_feed %}
+        <a href="{% url 'country_detail' c.country.slug %}#c{{ c.id }}">{% if c.is_question %}Join the discussion{% else %}Read in {{ c.country.name }}{% endif %} →</a>
       {% endif %}
 
       {% if c.user_id == user.id %}

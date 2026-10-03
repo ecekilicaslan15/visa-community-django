@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Design system · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 1rem">
+  <div class="eyebrow">Foundations</div>
+  <h1 style="font-size:2.3rem">Design system</h1>
+  <p class="lead muted" style="max-width:38rem">One consistent visual language: warm paper, deep navy for trust, deep teal for action, and a passport-artifact signature — stamps, boarding passes, and Visa Buddy.</p>
+</header>
+
+<div class="wrap section" style="padding-top:1rem">
+
+  <div class="ds-block">
+    <h2>Color</h2>
+    <div class="swatches">
+      <div class="swatch"><div class="color" style="background:#FAF6EE"></div><div class="info"><b>Paper</b><span class="mono muted">#FAF6EE</span></div></div><div class="swatch"><div class="color" style="background:#FFFFFF"></div><div class="info"><b>Card</b><span class="mono muted">#FFFFFF</span></div></div><div class="swatch"><div class="color" style="background:#E7DFD0"></div><div class="info"><b>Line</b><span class="mono muted">#E7DFD0</span></div></div>
+      <div class="swatch"><div class="color" style="background:#14283C"></div><div class="info"><b>Navy — trust</b><span class="mono muted">#14283C</span></div></div><div class="swatch"><div class="color" style="background:#0E6B66"></div><div class="info"><b>Teal — action</b><span class="mono muted">#0E6B66</span></div></div><div class="swatch"><div class="color" style="background:#C97B22"></div><div class="info"><b>Amber — accents</b><span class="mono muted">#C97B22</span></div></div>
+      <div class="swatch"><div class="color" style="background:#2E7D5B"></div><div class="info"><b>Approve</b><span class="mono muted">#2E7D5B</span></div></div><div class="swatch"><div class="color" style="background:#B5443B"></div><div class="info"><b>Reject</b><span class="mono muted">#B5443B</span></div></div><div class="swatch"><div class="color" style="background:#E9F1F6"></div><div class="info"><b>Sky tint</b><span class="mono muted">#E9F1F6</span></div></div>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Typography</h2>
+    <div class="card card-pad">
+      <div class="pass-label">Display · Bricolage Grotesque</div>
+      <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1.1">Share your visa journey.</div>
+      <div class="pass-label" style="margin-top:1.2rem">Body · Instrument Sans</div>
+      <p style="max-width:36rem;margin-bottom:.4rem">Learn from thousands of real visa experiences shared by travelers around the world. Warm, readable, and calm — because applicants are stressed enough already.</p>
+      <div class="pass-label" style="margin-top:1rem">Utility · IBM Plex Mono</div>
+      <div class="mono">IST → PAR · 12 JUN 2026 · APPROVED</div>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Buttons &amp; chips</h2>
+    <div class="demo-row">
+      <button class="btn btn-primary">Post to community</button>
+      <button class="btn btn-navy">Sign in</button>
+      <button class="btn btn-ghost">Browse countries</button>
+      <button class="btn btn-primary btn-sm">Share experience</button>
+    </div>
+    <div class="demo-row">
+      <span class="chip chip-approve">82% approved</span>
+      <span class="chip chip-neutral">2,340 experiences</span>
+      <span class="chip chip-amber">Last opening Jul 9</span>
+      <span class="tag-question">Question</span>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Passport stamps — visa outcomes</h2>
+    <p class="muted small" style="max-width:34rem">Outcomes are rubber-stamp badges, not social-media pills: mono type, double ring, a slight rotation. Rejected keeps the same dignity as Approved.</p>
+    <div class="demo-row">
+      <span class="stamp stamp-approved">Approved</span>
+      <span class="stamp stamp-rejected">Rejected</span>
+      <span class="stamp stamp-info upright">In progress</span>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Country stickers</h2>
+    <p class="muted small" style="max-width:34rem">Visa-sticker monograms instead of emoji flags — consistent on every platform, accurate by design.</p>
+    <div class="demo-row">
+      <span class="sticker s-navy">FR</span><span class="sticker s-teal">DE</span>
+      <span class="sticker s-amber">PT</span><span class="sticker s-rose">ES</span>
+      <span class="sticker lg s-navy">FR</span>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Traveler levels</h2>
+    <p class="muted small">Purely visual community progression — no backend required.</p>
+    <div class="demo-row">
+      <span class="level">🌍 New Traveler</span>
+      <span class="level">✈️ Frequent Traveler</span>
+      <span class="level">🛂 Visa Expert</span>
+      <span class="level">🏆 Community Helper</span>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Visa Buddy</h2>
+    <p class="muted small" style="max-width:34rem">A small line-art passport character. Minimal, expressive, never distracting. Four core poses cover most product moments.</p>
+    <div class="demo-row" style="gap:2.4rem;align-items:flex-end">
+      <div style="text-align:center">{% include "partials/buddy.html" with w=130 h=137 pose="wave" %}<div class="pass-label" style="margin-top:.4rem">Welcome</div></div>
+      <div style="text-align:center">{% include "partials/buddy.html" with w=130 h=137 pose="suitcase" %}<div class="pass-label" style="margin-top:.4rem">Empty states</div></div>
+      <div style="text-align:center">{% include "partials/buddy.html" with w=130 h=137 pose="coffee" %}<div class="pass-label" style="margin-top:.4rem">Waiting / prediction</div></div>
+      <div style="text-align:center">{% include "partials/buddy.html" with w=130 h=137 pose="success" %}<div class="pass-label" style="margin-top:.4rem">Success</div></div>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Empty states</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem" class="empty-grid">
+      <div class="empty">
+        {% include "partials/buddy.html" with w=120 h=127 pose="suitcase" %}
+        <h3>No one has shared their Portugal experience yet.</h3>
+        <p>Be the first traveler to help the community — this country is waiting for its first story.</p>
+        <a class="btn btn-primary" href="{% url 'home' %}#countries">Share your experience</a>
+      </div>
+      <div class="empty">
+        {% include "partials/buddy.html" with w=120 h=127 pose="coffee" %}
+        <h3>Still waiting for enough appointment data.</h3>
+        <p>Predictions appear once travelers report a few appointment openings. Shared dates make forecasts better for everyone.</p>
+        <a class="btn btn-ghost" href="{% url 'home' %}#countries">Report an opening</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-block">
+    <h2>Helper tips</h2>
+    <div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Appointment opening dates help improve future predictions.</div></div>
+  </div>
+
+</div>
+<style>@media (max-width:760px){ .empty-grid{grid-template-columns:1fr !important} }</style>
+{% endblock %}

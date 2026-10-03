@@ -1,70 +1,108 @@
 {% extends "base.html" %}
 
-{% block title %}VisaCommunity — real visa experiences{% endblock %}
+{% block title %}Share your visa journey · VisaCommunity{% endblock %}
 
 {% block content %}
-<section class="wrap hero">
-  <div class="hero-grid">
+<header class="hero">
+  <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow">Community visa journal</div>
-      <h1>Apply with the experience of everyone who went before you.</h1>
-      <p class="lead">Read real visa experiences by country — which documents were checked, how long the wait was, and whether it was approved — then share your own.</p>
+      <div class="eyebrow">Schengen visa community</div>
+      <h1>Share your visa journey.</h1>
+      <p class="lead">Learn from real Schengen visa experiences shared by travelers like you — appointment tips, document lists, waiting times, and honest outcomes.</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="#countries">Browse countries</a>
-        {% if not user.is_authenticated %}<a class="btn btn-ghost" href="{% url 'accounts:signup' %}">Join the community</a>{% endif %}
+        {% if user.is_authenticated and first_country %}
+          <a class="btn btn-ghost" href="{% url 'country_detail' first_country.slug %}#compose">Share your experience</a>
+        {% elif not user.is_authenticated %}
+          <a class="btn btn-ghost" href="{% url 'accounts:signup' %}">Share your experience</a>
+        {% endif %}
       </div>
+      <form class="search" role="search" method="get" action="{% url 'home' %}#countries" style="margin-top:1.5rem">
+        <input type="search" name="q" value="{{ query }}" placeholder="Search a country… e.g. France, Germany" aria-label="Search a country">
+        <button class="btn btn-navy btn-sm" type="submit">Search</button>
+      </form>
       <div class="stat-strip">
-        <div class="stat"><b>{{ countries|length }}</b><span>countries</span></div>
-        <div class="stat"><b>{{ totals.experiences }}</b><span>experiences</span></div>
-        <div class="stat"><b>{{ totals.questions }}</b><span>questions</span></div>
+        <div class="stat"><b>{{ totals.experiences }}</b><span>experiences shared</span></div>
+        <div class="stat"><b>{{ totals.countries }}</b><span>countr{{ totals.countries|pluralize:"y,ies" }} covered</span></div>
+        <div class="stat"><b>{{ totals.questions }}</b><span>questions asked</span></div>
       </div>
     </div>
     <div class="hero-buddy">
-      <span class="float-stamp a stamp stamp-approved">Approved</span>
-      <div class="floaty">{% include "partials/buddy.html" with w=200 h=212 wave=True %}</div>
-      <span class="float-stamp b stamp stamp-info">In progress</span>
+      <span class="float-stamp a"><span class="stamp stamp-approved">Approved</span></span>
+      <span class="float-stamp b"><span class="stamp stamp-info">FR · Paris</span></span>
+      <div class="floaty">{% include "partials/buddy.html" with w=190 h=201 pose="wave" %}</div>
+      <p class="small muted" style="margin-top:.4rem">Visa Buddy says hi. You're not alone in this.</p>
     </div>
+  </div>
+</header>
+
+<section class="section" id="countries">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Destinations</div><h2>{% if query %}Results for “{{ query }}”{% else %}Browse countries{% endif %}</h2></div>
+      {% if query %}<a class="btn btn-ghost btn-sm" href="{% url 'home' %}#countries">Clear search</a>
+      {% else %}<p class="muted small">Approval rates come from experiences shared here — not official statistics.</p>{% endif %}
+    </div>
+
+    {% if countries %}
+      <div class="grid-countries">
+        {% for c in countries %}
+          <a class="card card-hover country-card" href="{% url 'country_detail' c.slug %}">
+            <span class="sticker {% cycle 's-navy' 's-teal' 's-amber' 's-rose' %}">{{ c.sticker_code }}</span>
+            <div><div class="name">{{ c.name }}</div><div class="meta">{{ c.experience_count }} experience{{ c.experience_count|pluralize }} shared</div></div>
+            <div>
+              {% if c.approval_rate is not None %}<span class="chip chip-approve">{{ c.approval_rate }}% approved</span>
+              {% else %}<span class="chip chip-neutral">No outcomes yet</span>{% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% elif query %}
+      <div class="empty">
+        {% include "partials/buddy.html" with w=110 h=116 pose="suitcase" %}
+        <h3>No country matches “{{ query }}”</h3>
+        <p>Check the spelling, or browse the full list.</p>
+        <a class="btn btn-ghost" href="{% url 'home' %}#countries">Show all countries</a>
+      </div>
+    {% else %}
+      <div class="empty">
+        {% include "partials/buddy.html" with w=110 h=116 pose="suitcase" %}
+        <h3>No countries yet</h3>
+        <p>Add countries from the Django admin (/admin) and they'll appear here.</p>
+      </div>
+    {% endif %}
   </div>
 </section>
 
-<section class="wrap section" id="countries" style="padding-top:1rem">
-  <div class="section-head">
-    <div><div class="eyebrow">Destinations</div><h2>Countries</h2></div>
-  </div>
-
-  {% if countries %}
-    <div class="grid-countries">
-      {% for c in countries %}
-        <a class="card card-hover country-card" href="{% url 'country_detail' c.slug %}">
-          <span class="sticker {% cycle 's-navy' 's-teal' 's-amber' 's-rose' %}">{{ c.sticker_code }}</span>
-          <div>
-            <div class="name">{{ c.name }}</div>
-            <div class="meta">{{ c.experience_count }} experience{{ c.experience_count|pluralize }} · {{ c.comment_count }} post{{ c.comment_count|pluralize }}</div>
-          </div>
-          <div>
-            {% if c.approval_rate is not None %}<span class="chip chip-approve">{{ c.approval_rate }}% approved</span>
-            {% else %}<span class="chip chip-neutral">No outcomes yet</span>{% endif %}
-          </div>
-        </a>
+{% if recent %}
+<section class="section" style="padding-top:.5rem">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Right now</div><h2>Recent community activity</h2></div>
+    </div>
+    <div class="timeline">
+      {% for c in recent %}
+        {% include "partials/comment_card.html" with c=c in_feed=True %}
       {% endfor %}
     </div>
-  {% else %}
-    <div class="empty">
-      {% include "partials/buddy.html" with w=90 h=95 wave=True %}
-      <h3>No countries yet</h3>
-      <p>Add countries from the Django admin (/admin) and they'll appear here.</p>
-    </div>
-  {% endif %}
+    <div style="margin-top:1.6rem"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Every shared experience helps someone. Your story might be exactly what another traveler needs.</div></div></div>
+  </div>
 </section>
+{% endif %}
 
 {% if not user.is_authenticated %}
-<section class="wrap">
-  <div class="band">
-    <div>
-      <h2>Your appointment story could save someone weeks.</h2>
-      <p>Share what the consulate actually checked, how long you waited, and how it ended. Questions are welcome too.</p>
+<section class="section">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2>Together we make visa applications easier.</h2>
+        <p>Join a community of travelers who share what actually happens at appointments — so the next person walks in prepared instead of anxious.</p>
+      </div>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+        <a class="btn btn-primary" href="{% url 'accounts:signup' %}">Join the community</a>
+        <a class="btn btn-ghost on-dark" href="#countries">Explore first</a>
+      </div>
     </div>
-    <a class="btn btn-primary" href="{% url 'accounts:signup' %}">Create an account</a>
   </div>
 </section>
 {% endif %}

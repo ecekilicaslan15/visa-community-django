@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Country insights · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 1rem">
+  <div class="eyebrow">Insights</div>
+  <h1 style="font-size:2.3rem">Country insights</h1>
+  <p class="lead muted" style="max-width:40rem">Every country side by side — approval rates, waiting times and the latest appointments, all calculated from experiences shared in this community.</p>
+  <div class="legend" style="margin-top:.8rem">
+    <span><span class="chip chip-approve">Approved</span> outcomes shared</span>
+    <span><span class="chip chip-reject">Rejected</span> outcomes shared</span>
+    <span>Community data — not official statistics.</span>
+  </div>
+</header>
+
+<div class="wrap section" style="padding-top:1.2rem">
+  {% if countries %}
+    <div class="filter-row" data-ledger-filter role="tablist" aria-label="Filter countries">
+      <button data-filter="all" aria-selected="true">All countries</button>
+      <button data-filter="has-data" aria-selected="false">With experiences</button>
+      <button data-filter="has-rejections" aria-selected="false">Has rejections</button>
+      <button data-filter="no-data" aria-selected="false">Waiting for first story</button>
+    </div>
+
+    <div class="card table-scroll">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Approval rate</th>
+            <th>Experiences</th>
+            <th>Outcomes</th>
+            <th>Avg. wait</th>
+            <th>Latest appointment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in countries %}
+            <tr data-has-data="{% if c.experience_count %}1{% else %}0{% endif %}" data-has-rejections="{% if c.rejected_count %}1{% else %}0{% endif %}">
+              <td>
+                <a class="country-cell" href="{% url 'country_detail' c.slug %}" style="color:inherit">
+                  <span class="sticker sm {% cycle 's-navy' 's-teal' 's-amber' 's-rose' %}">{{ c.sticker_code }}</span>
+                  <span><b>{{ c.name }}</b><span>{{ c.comment_count }} post{{ c.comment_count|pluralize }}</span></span>
+                </a>
+              </td>
+              <td>
+                {% if c.approval_rate is not None %}
+                  <div class="rate"><b>{{ c.approval_rate }}%</b><span class="meter"><i style="width:{{ c.approval_rate }}%"></i></span></div>
+                {% else %}<span class="num">—</span>{% endif %}
+              </td>
+              <td class="num">{{ c.experience_count }}</td>
+              <td>
+                {% if c.experience_count %}
+                  <span class="chip chip-approve">{{ c.approved_count }}</span>
+                  <span class="chip chip-reject">{{ c.rejected_count }}</span>
+                {% else %}<span class="num">—</span>{% endif %}
+              </td>
+              <td class="num">{% if c.avg_wait is not None %}{{ c.avg_wait }} day{{ c.avg_wait|pluralize }}{% else %}—{% endif %}</td>
+              <td class="num">{% if c.last_appointment %}{{ c.last_appointment|date:"d M Y"|upper }}{% else %}—{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=110 h=116 pose="suitcase" %}
+      <h3>No countries yet</h3>
+      <p>Insights appear once countries are added and travelers start sharing.</p>
+    </div>
+  {% endif %}
+
+  <div style="margin-top:2rem"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Approval rates only count experiences with a reported outcome. A country with few stories can swing a lot.</div></div></div>
+</div>
+
+<script>
+// Insights ledger filter — hides rows that don't match the chosen pill
+(function () {
+  var row = document.querySelector("[data-ledger-filter]");
+  if (!row) return;
+  var rows = document.querySelectorAll(".ledger tbody tr");
+  row.querySelectorAll("button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      row.querySelectorAll("button").forEach(function (b) {
+        b.setAttribute("aria-selected", b === btn ? "true" : "false");
+      });
+      var f = btn.dataset.filter;
+      rows.forEach(function (tr) {
+        var show = f === "all"
+          || (f === "has-data" && tr.dataset.hasData === "1")
+          || (f === "no-data" && tr.dataset.hasData === "0")
+          || (f === "has-rejections" && tr.dataset.hasRejections === "1");
+        tr.style.display = show ? "" : "none";
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

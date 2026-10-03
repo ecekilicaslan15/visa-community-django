@@ -19,3 +19,15 @@ Bootstrap
 Git
 Status:
 The project is currently under active development and continuously being improved.
+
+Running locally:
+```bash
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_countries   # adds FR, DE, NL, ES, IT, PT, GR, CZ (safe to re-run)
+python manage.py createsuperuser  # optional, for /admin
+python manage.py runserver
+```
+Pages: `/` home · `/countries/<slug>/` · `/insights/` · `/profile/` · `/design-system/` · `/accounts/login/` · `/accounts/signup/`
