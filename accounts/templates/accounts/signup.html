@@ -1,29 +1,37 @@
 {% extends "base.html" %}
 
+{% block title %}Join · VisaCommunity{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
+<div class="auth">
+  {% include "partials/auth_side.html" with heading="Join travelers helping travelers." %}
+  <div class="auth-main">
+    <div class="auth-card">
+      <h2 style="margin-bottom:.2rem">Create your account</h2>
+      <ul class="benefits">
+        <li>Ask questions about any country's visa process</li>
+        <li>Share your experience and help the next applicant</li>
+        <li>Keep your own travel journal of stamps</li>
+      </ul>
 
-        <h1 class="h4 mb-3">Sign up</h1>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+          <div class="field">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+            {% if field.help_text %}<div class="hint">{{ field.help_text|safe }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary btn-block" type="submit">Create account</button>
+      </form>
 
-        <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
-
-          <button class="btn btn-primary w-100" type="submit">
-            Create account
-          </button>
-        </form>
-
-        <p class="text-muted small mt-3 mb-0">
-          Already have an account?
-          <a href="{% url 'login' %}">Login</a>
-        </p>
-
-      </div>
+      <p class="auth-alt">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
     </div>
   </div>
 </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}

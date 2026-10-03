@@ -1,40 +1,71 @@
 {% extends "base.html" %}
 
+{% block title %}VisaCommunity — real visa experiences{% endblock %}
+
 {% block content %}
-  <h1 class="mb-4">Countries</h1>
-
-  <div class="row">
-    {% for c in countries %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title mb-1">
-              {{ c.name }}
-
-              {% if c.comment_count > 0 %}
-                <span class="badge bg-primary ms-2">
-                  {{ c.comment_count }}
-                </span>
-              {% else %}
-                <span class="badge bg-secondary ms-2">
-                  0
-                </span>
-              {% endif %}
-            </h5>
-
-
-            {% if c.description %}
-              <p class="card-text text-muted">
-                {{ c.description|truncatewords:20 }}
-              </p>
-            {% endif %}
-
-            <a href="{% url 'country_detail' c.slug %}" class="btn btn-primary btn-sm">
-              View details
-            </a>
-          </div>
-        </div>
+<section class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Community visa journal</div>
+      <h1>Apply with the experience of everyone who went before you.</h1>
+      <p class="lead">Read real visa experiences by country — which documents were checked, how long the wait was, and whether it was approved — then share your own.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#countries">Browse countries</a>
+        {% if not user.is_authenticated %}<a class="btn btn-ghost" href="{% url 'accounts:signup' %}">Join the community</a>{% endif %}
       </div>
-    {% endfor %}
+      <div class="stat-strip">
+        <div class="stat"><b>{{ countries|length }}</b><span>countries</span></div>
+        <div class="stat"><b>{{ totals.experiences }}</b><span>experiences</span></div>
+        <div class="stat"><b>{{ totals.questions }}</b><span>questions</span></div>
+      </div>
+    </div>
+    <div class="hero-buddy">
+      <span class="float-stamp a stamp stamp-approved">Approved</span>
+      <div class="floaty">{% include "partials/buddy.html" with w=200 h=212 wave=True %}</div>
+      <span class="float-stamp b stamp stamp-info">In progress</span>
+    </div>
   </div>
+</section>
+
+<section class="wrap section" id="countries" style="padding-top:1rem">
+  <div class="section-head">
+    <div><div class="eyebrow">Destinations</div><h2>Countries</h2></div>
+  </div>
+
+  {% if countries %}
+    <div class="grid-countries">
+      {% for c in countries %}
+        <a class="card card-hover country-card" href="{% url 'country_detail' c.slug %}">
+          <span class="sticker {% cycle 's-navy' 's-teal' 's-amber' 's-rose' %}">{{ c.sticker_code }}</span>
+          <div>
+            <div class="name">{{ c.name }}</div>
+            <div class="meta">{{ c.experience_count }} experience{{ c.experience_count|pluralize }} · {{ c.comment_count }} post{{ c.comment_count|pluralize }}</div>
+          </div>
+          <div>
+            {% if c.approval_rate is not None %}<span class="chip chip-approve">{{ c.approval_rate }}% approved</span>
+            {% else %}<span class="chip chip-neutral">No outcomes yet</span>{% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=90 h=95 wave=True %}
+      <h3>No countries yet</h3>
+      <p>Add countries from the Django admin (/admin) and they'll appear here.</p>
+    </div>
+  {% endif %}
+</section>
+
+{% if not user.is_authenticated %}
+<section class="wrap">
+  <div class="band">
+    <div>
+      <h2>Your appointment story could save someone weeks.</h2>
+      <p>Share what the consulate actually checked, how long you waited, and how it ended. Questions are welcome too.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'accounts:signup' %}">Create an account</a>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

@@ -1,29 +1,37 @@
 {% extends "base.html" %}
 
+{% block title %}Sign in · VisaCommunity{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
+<div class="auth">
+  {% include "partials/auth_side.html" with heading="Welcome back, traveler." %}
+  <div class="auth-main">
+    <div class="auth-card">
+      <h2 style="margin-bottom:.2rem">Sign in</h2>
+      <p class="muted" style="margin-top:0">Pick up where your journey left off.</p>
 
-        <h1 class="h4 mb-3">Login</h1>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
 
-        <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
+        <div class="field">
+          <label for="id_username">Username</label>
+          <input id="id_username" name="username" class="input" autocomplete="username" autofocus required value="{{ form.username.value|default:'' }}">
+          {{ form.username.errors }}
+        </div>
+        <div class="field">
+          <label for="id_password">Password</label>
+          <input id="id_password" name="password" class="input" type="password" autocomplete="current-password" required>
+          {{ form.password.errors }}
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      </form>
 
-          <button class="btn btn-dark w-100" type="submit">
-            Login
-          </button>
-        </form>
-
-        <p class="text-muted small mt-3 mb-0">
-          No account?
-          <a href="{% url 'accounts:signup' %}">Sign up</a>
-        </p>
-
-      </div>
+      <p class="auth-alt">New here? <a href="{% url 'accounts:signup' %}">Create an account</a> — it takes a minute.</p>
     </div>
   </div>
 </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}

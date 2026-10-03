@@ -1,123 +1,157 @@
 {% extends "base.html" %}
 
+{% block title %}{{ country.name }} — visa experiences · VisaCommunity{% endblock %}
+
 {% block content %}
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-      <h1 class="mb-1">{{ country.name }}</h1>
-      <div class="text-muted small">
-        Slug: <span class="font-monospace">{{ country.slug }}</span>
-      </div>
-    </div>
+<div class="wrap breadcrumb"><a href="{% url 'home' %}">Countries</a> <span aria-hidden="true">›</span> {{ country.name }}</div>
 
-    <a href="/" class="btn btn-outline-secondary btn-sm">← Back</a>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <h5 class="card-title">Overview</h5>
-
-      {% if country.description %}
-        <p class="card-text text-muted mb-0">{{ country.description }}</p>
-      {% else %}
-        <p class="card-text text-muted mb-0">No description yet.</p>
-      {% endif %}
+<header class="wrap country-hero">
+  <span class="sticker lg s-navy">{{ country.sticker_code }}</span>
+  <div class="title">
+    <h1>{{ country.name }}</h1>
+    {% if country.description %}<p class="muted country-desc" style="margin:0">{{ country.description }}</p>{% endif %}
+    <div class="chips">
+      {% if stats.approval_rate is not None %}<span class="chip chip-approve">{{ stats.approval_rate }}% approved</span>{% endif %}
+      <span class="chip chip-neutral">{{ stats.experiences }} experience{{ stats.experiences|pluralize }}</span>
+      {% if stats.last_appointment %}<span class="chip chip-amber">Latest appointment reported {{ stats.last_appointment|date:"M j" }}</span>{% endif %}
     </div>
   </div>
+</header>
 
-  <!-- COMMENTS -->
-  <h5 class="mb-3">Comments</h5>
-
-  {% for comment in comments %}
-    <div class="mb-3 pb-2 border-bottom">
-      <div class="small text-muted mb-1">
-        {{ comment.user.username }}
-        ·
-        {{ comment.created_at|date:"d M Y H:i" }}
+<div class="wrap detail-grid section" style="padding-top:1.2rem">
+  <main>
+    {% if user.is_authenticated %}
+    <section class="card compose card-pad" id="compose" aria-label="Write a comment">
+      <div class="comment-head" style="margin-bottom:1rem">
+        <div>{% include "partials/buddy.html" with w=64 h=67 wave=True %}</div>
+        <div class="who">
+          <h3 style="margin:0">Add your voice</h3>
+          <span class="muted small">Ask anything, or tell the community how it went. Both help.</span>
+        </div>
       </div>
 
-      <p class="mb-2">{{ comment.text }}</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.kind }}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
 
-      <!-- ACTIONS -->
-      <div class="d-flex align-items-center">
+        <div class="field">
+          <div class="seg" data-compose-seg role="group" aria-label="Comment type">
+            <button type="button" data-mode="question" aria-pressed="true">Ask a question</button>
+            <button type="button" data-mode="experience" aria-pressed="false">Share an experience</button>
+          </div>
+        </div>
 
-        <!-- LIKE -->
-        <form
-          method="post"
-          action="{% url 'toggle_like' comment.id %}"
-          class="me-2"
-        >
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-primary">
-            ❤️ {{ comment.likes.count }}
-          </button>
-        </form>
+        <div class="field">
+          <label for="{{ form.text.id_for_label }}">Your message</label>
+          {{ form.text }}
+          {{ form.text.errors }}
+          <div class="counter" data-counter>0 / 2000</div>
+        </div>
 
-        {% if comment.user == user %}
-          <!-- DELETE -->
-          <form
-            method="post"
-            action="{% url 'delete_comment' comment.id %}"
-            class="me-1"
-          >
-            {% csrf_token %}
-            <button class="btn btn-sm btn-outline-danger">
-              Delete
-            </button>
-          </form>
+        <div data-experience-fields hidden>
+          <div class="field">
+            <label>Visa outcome</label>
+            <div class="outcome">
+              <input type="radio" name="outcome" value="approved" id="o-a" {% if form.outcome.value == 'approved' %}checked{% endif %}><label class="ok" for="o-a">Approved</label>
+              <input type="radio" name="outcome" value="rejected" id="o-r" {% if form.outcome.value == 'rejected' %}checked{% endif %}><label class="no" for="o-r">Rejected</label>
+            </div>
+            {{ form.outcome.errors }}
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="{{ form.appointment_city.id_for_label }}">Appointment city</label>
+              {{ form.appointment_city }}
+              {{ form.appointment_city.errors }}
+            </div>
+            <div class="field">
+              <label for="{{ form.appointment_date.id_for_label }}">Appointment date</label>
+              {{ form.appointment_date }}
+              {{ form.appointment_date.errors }}
+              <div class="hint">Appointment dates help improve future predictions.</div>
+            </div>
+          </div>
+          <div class="field" style="max-width:16rem">
+            <label for="{{ form.wait_days.id_for_label }}">Days until passport returned</label>
+            {{ form.wait_days }}
+            {{ form.wait_days.errors }}
+          </div>
+        </div>
 
-          <!-- EDIT -->
-          <a
-            href="{% url 'edit_comment' comment.id %}"
-            class="btn btn-sm btn-outline-secondary"
-          >
-            Edit
-          </a>
-        {% endif %}
+        <div class="compose-foot">
+          <button class="btn btn-primary" type="submit">Post to community</button>
+          <span class="note">Be kind and specific — no personal documents, please.</span>
+        </div>
+      </form>
+    </section>
+    {% else %}
+    <section class="card compose card-pad" id="compose">
+      <div class="comment-head">
+        <div>{% include "partials/buddy.html" with w=64 h=67 wave=True %}</div>
+        <div class="who">
+          <h3 style="margin:0">Add your voice</h3>
+          <span class="muted small">Sign in to ask a question or share how your application went.</span>
+        </div>
+        <div class="right" style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <a class="btn btn-primary btn-sm" href="{% url 'login' %}?next={{ request.path|urlencode }}%23compose">Sign in</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'accounts:signup' %}">Create account</a>
+        </div>
       </div>
+    </section>
+    {% endif %}
+
+    <div style="margin:1.6rem 0"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — The more details you share, the more helpful your experience becomes — appointment city, waiting time, and which documents were actually checked.</div></div></div>
+
+    <div class="section-head" style="margin-bottom:1.2rem">
+      <div><div class="eyebrow">Travel journal</div><h2>Experiences &amp; questions</h2></div>
+      <p class="muted small">{{ stats.this_month }} this month</p>
     </div>
-  {% empty %}
-    <p class="text-muted">No comments yet.</p>
-  {% endfor %}
 
-  <!-- PAGINATION -->
-  {% if comments.has_other_pages %}
-    <nav class="mt-3">
-      <ul class="pagination pagination-sm">
+    {% if comments %}
+      <div class="timeline">
+        {% for c in comments %}
+          {% include "partials/comment_card.html" with c=c %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">
+        {% include "partials/buddy.html" with w=90 h=95 wave=True %}
+        <h3>No posts for {{ country.name }} yet</h3>
+        <p>Be the first — a question counts too. You don't have to finish your visa process to participate.</p>
+        <a class="btn btn-primary" href="#compose">Write the first post</a>
+      </div>
+    {% endif %}
 
-        {% if comments.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ comments.previous_page_number }}">
-              Previous
-            </a>
-          </li>
-        {% endif %}
+    {% if comments.has_other_pages %}
+      <div class="pager">
+        {% if comments.has_previous %}<a class="btn btn-ghost btn-sm" href="?page={{ comments.previous_page_number }}">← Newer</a>{% endif %}
+        <span class="muted">Page {{ comments.number }} of {{ comments.paginator.num_pages }}</span>
+        {% if comments.has_next %}<a class="btn btn-ghost btn-sm" href="?page={{ comments.next_page_number }}">Older →</a>{% endif %}
+      </div>
+    {% endif %}
+  </main>
 
-        <li class="page-item disabled">
-          <span class="page-link">
-            Page {{ comments.number }} of {{ comments.paginator.num_pages }}
-          </span>
-        </li>
+  <aside class="side-sticky">
+    <section class="card predict" aria-label="Appointment outlook">
+      <div class="predict-head">{% include "partials/buddy.html" with w=44 h=46 %}<h3>Appointment outlook</h3></div>
+      <div class="predict-body">
+        {# Prediction model isn't built yet — show honest progress instead of a fake window #}
+        <div class="coming-soon">
+          <b>Coming soon</b>
+          We'll estimate the next opening window once enough appointment dates are shared.
+        </div>
+        <div class="meter" role="img" aria-label="Data collected"><i style="width:{% widthratio stats.dated_appointments 30 100 %}%;max-width:100%"></i></div>
+        <div class="predict-meta">{{ stats.dated_appointments }} of 30 dated appointments collected. Not official information.</div>
+      </div>
+    </section>
 
-        {% if comments.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ comments.next_page_number }}">
-              Next
-            </a>
-          </li>
-        {% endif %}
+    <div class="mini-stats">
+      <div class="card mini-stat"><b>{% if stats.approval_rate is not None %}{{ stats.approval_rate }}%{% else %}—{% endif %}</b><span>approval rate</span></div>
+      <div class="card mini-stat"><b>{% if stats.avg_wait is not None %}{{ stats.avg_wait }}d{% else %}—{% endif %}</b><span>avg. wait</span></div>
+      <div class="card mini-stat"><b>{{ stats.experiences }}</b><span>experiences</span></div>
+    </div>
 
-      </ul>
-    </nav>
-  {% endif %}
-
-  <!-- ADD COMMENT -->
-  <form method="post" class="mt-4">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary btn-sm">
-      Add comment
-    </button>
-  </form>
-
+    <div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Questions are welcome too. You don't have to finish your visa process to participate.</div></div>
+  </aside>
+</div>
 {% endblock %}

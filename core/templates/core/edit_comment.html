@@ -1,21 +1,52 @@
 {% extends "base.html" %}
 
+{% block title %}Edit post · VisaCommunity{% endblock %}
+
 {% block content %}
-  <h3>Edit comment</h3>
+<div class="wrap breadcrumb"><a href="{% url 'home' %}">Countries</a> <span aria-hidden="true">›</span> <a href="{% url 'country_detail' comment.country.slug %}">{{ comment.country.name }}</a> <span aria-hidden="true">›</span> Edit</div>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<div class="wrap section" style="max-width:760px;padding-top:1.4rem">
+  <section class="card compose card-pad">
+    <h2 style="margin-bottom:1rem">Edit your post</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.kind }}
 
-    <button class="btn btn-primary btn-sm">
-      Save changes
-    </button>
+      <div class="field">
+        <div class="seg" data-compose-seg role="group" aria-label="Comment type">
+          <button type="button" data-mode="question" aria-pressed="true">Question</button>
+          <button type="button" data-mode="experience" aria-pressed="false">Experience</button>
+        </div>
+      </div>
 
-    <a
-      href="{% url 'country_detail' comment.country.slug %}"
-      class="btn btn-secondary btn-sm ms-2"
-    >
-      Cancel
-    </a>
-  </form>
+      <div class="field">
+        <label for="{{ form.text.id_for_label }}">Your message</label>
+        {{ form.text }}
+        {{ form.text.errors }}
+        <div class="counter" data-counter>0 / 2000</div>
+      </div>
+
+      <div data-experience-fields hidden>
+        <div class="field">
+          <label>Visa outcome</label>
+          <div class="outcome">
+            <input type="radio" name="outcome" value="approved" id="o-a" {% if form.outcome.value == 'approved' %}checked{% endif %}><label class="ok" for="o-a">Approved</label>
+            <input type="radio" name="outcome" value="rejected" id="o-r" {% if form.outcome.value == 'rejected' %}checked{% endif %}><label class="no" for="o-r">Rejected</label>
+          </div>
+          {{ form.outcome.errors }}
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="{{ form.appointment_city.id_for_label }}">Appointment city</label>{{ form.appointment_city }}{{ form.appointment_city.errors }}</div>
+          <div class="field"><label for="{{ form.appointment_date.id_for_label }}">Appointment date</label>{{ form.appointment_date }}{{ form.appointment_date.errors }}</div>
+        </div>
+        <div class="field" style="max-width:16rem"><label for="{{ form.wait_days.id_for_label }}">Days until passport returned</label>{{ form.wait_days }}{{ form.wait_days.errors }}</div>
+      </div>
+
+      <div class="compose-foot">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+        <a class="btn btn-ghost" href="{% url 'country_detail' comment.country.slug %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</div>
 {% endblock %}

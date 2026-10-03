@@ -1,0 +1,62 @@
+{% comment %}
+  One timeline entry. Context:
+    c            — the Comment (with .like_count annotated)
+    on_profile   — True on the profile page: show the country instead of the author
+    liked_ids    — set of comment ids the current user liked (country page)
+{% endcomment %}
+<div class="t-entry{% if c.is_question %} is-question{% elif c.outcome == 'rejected' %} is-rejected{% endif %}" data-kind="{{ c.kind }}" id="c{{ c.id }}">
+  <article class="card {% if c.is_experience %}pass{% else %}comment-card{% endif %}">
+
+    {% if c.is_experience %}
+      <div class="pass-stub">
+        <div><div class="pass-label">Route</div><div class="pass-route">{{ c.appointment_city|default:"—"|slice:":3"|upper }} → {{ c.country.sticker_code }}</div></div>
+        {% if c.appointment_date %}<div><div class="pass-label">Appointment</div><div class="mono small">{{ c.appointment_date|date:"d M Y"|upper }}</div></div>{% endif %}
+        {% if c.wait_days is not None %}<div><div class="pass-label">Wait</div><div class="mono small">{{ c.wait_days }} DAY{{ c.wait_days|pluralize:"S" }}</div></div>{% endif %}
+      </div>
+      <div class="pass-main">
+    {% endif %}
+
+    <div class="comment-head">
+      {% if on_profile %}
+        <div class="who"><b>{{ c.country.name }}</b><span>{% if c.is_experience %}shared{% else %}asked{% endif %} {{ c.created_at|timesince }} ago</span></div>
+      {% else %}
+        <span class="avatar">{{ c.user.username|slice:":2"|upper }}</span>
+        <div class="who"><b>{{ c.user.username }}</b><span>{{ c.created_at|timesince }} ago</span></div>
+      {% endif %}
+      <div class="right">
+        {% if c.is_question %}<span class="tag-question">Question</span>
+        {% elif c.outcome == 'approved' %}<span class="stamp stamp-approved">Approved</span>
+        {% elif c.outcome == 'rejected' %}<span class="stamp stamp-rejected">Rejected</span>{% endif %}
+      </div>
+    </div>
+
+    <p class="comment-body">{% if on_profile %}{{ c.text|truncatechars:180 }}{% else %}{{ c.text|linebreaksbr }}{% endif %}</p>
+
+    <div class="comment-foot">
+      {% if user.is_authenticated and c.user_id != user.id %}
+        <form method="post" action="{% url 'toggle_like' c.id %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}#c{{ c.id }}">
+          <button class="link-btn{% if c.id in liked_ids %} liked{% endif %}">Helpful · {{ c.like_count }}</button>
+        </form>
+      {% else %}
+        <span>Helpful · {{ c.like_count }}</span>
+      {% endif %}
+
+      {% if on_profile %}
+        <a href="{% url 'country_detail' c.country.slug %}#c{{ c.id }}">View in {{ c.country.name }} →</a>
+      {% endif %}
+
+      {% if c.user_id == user.id %}
+        <a href="{% url 'edit_comment' c.id %}">Edit</a>
+        <form method="post" action="{% url 'delete_comment' c.id %}" class="inline-form" onsubmit="return confirm('Delete this post?');">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="link-btn danger">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if c.is_experience %}</div>{% endif %}
+  </article>
+</div>

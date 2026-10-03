@@ -1,80 +1,63 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>VisaCommunity</title>
-
-  <!-- Bootstrap CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}VisaCommunity{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400..700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'core/css/visacommunity.css' %}">
 </head>
-
-<body class="bg-light">
-
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="/">VisaCommunity</a>
-
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarMain"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <ul class="navbar-nav ms-auto">
-
-          <li class="nav-item">
-            <a class="nav-link" href="/">Countries</a>
-          </li>
-
-          {% if user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'profile' %}">
-                    My profile
-                </a>
-            </li>
-
-            <li class="nav-item">
-              <span class="navbar-text me-2">
-                Hi, {{ user.username }}
-              </span>
-            </li>
-            <li class="nav-item">
-              <form method="post" action="{% url 'logout' %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="nav-link btn btn-link p-0">
-                  Logout
-                </button>
-              </form>
-            </li>
-          {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:signup' %}">Sign up</a>
-            </li>
-          {% endif %}
-
-        </ul>
-      </div>
+<body>
+{% with url_name=request.resolver_match.url_name %}
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="{% url 'home' %}">{% include "partials/logo.html" %} VisaCommunity</a>
+    <button class="nav-toggle" aria-expanded="false" aria-label="Menu">☰</button>
+    <div class="nav-links">
+      <a href="{% url 'home' %}#countries" {% if url_name == 'home' or url_name == 'country_detail' %}class="active"{% endif %}>Countries</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" {% if url_name == 'profile' %}class="active"{% endif %}>My journal</a>
+        <span class="nav-user">Hi, {{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-btn">Sign out</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" {% if url_name == 'login' %}class="active"{% endif %}>Sign in</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">Join the community</a>
+      {% endif %}
     </div>
-  </nav>
-
-  <!-- PAGE CONTENT -->
-  <div class="container my-4">
-    {% block content %}{% endblock %}
   </div>
+</nav>
+{% endwith %}
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% if messages %}
+  <div class="wrap">
+    <ul class="messages">
+      {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+    </ul>
+  </div>
+{% endif %}
 
+{% block content %}{% endblock %}
+
+{% block footer %}
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div style="max-width:22rem">
+        <div class="brand" style="margin-bottom:.5rem">{% include "partials/logo.html" %} VisaCommunity</div>
+        <p style="margin:0;color:#93A5B5">Real visa experiences, shared by real travelers. Community estimates are not official information — always confirm with your consulate.</p>
+      </div>
+      <div><b style="color:#fff">Explore</b><br><a href="{% url 'home' %}#countries">Countries</a><br>{% if user.is_authenticated %}<a href="{% url 'profile' %}">My journal</a>{% else %}<a href="{% url 'accounts:signup' %}">Join</a>{% endif %}</div>
+      <div><b style="color:#fff">Community</b><br><a href="#">Guidelines</a><br><a href="#">Privacy</a><br><a href="#">Contact</a></div>
+    </div>
+    <div class="mrz">P&lt;VISACOMMUNITY&lt;&lt;TRAVEL&lt;TOGETHER&lt;&lt;APPLY&lt;SMARTER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>VC2026001&lt;&lt;SHARE&lt;EXPERIENCES&lt;&lt;HELP&lt;TRAVELERS&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;06</div>
+  </div>
+</footer>
+{% endblock %}
+
+<script src="{% static 'core/js/visacommunity.js' %}"></script>
 </body>
 </html>

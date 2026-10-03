@@ -1,46 +1,64 @@
 {% extends "base.html" %}
 
+{% block title %}My travel journal · VisaCommunity{% endblock %}
+
 {% block content %}
-  <h3 class="mb-3">My comments</h3>
-
-  {% for comment in comments %}
-    <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="small text-muted mb-1">
-          {{ comment.country.name }}
-          ·
-          {{ comment.created_at|date:"d M Y H:i" }}
-        </div>
-
-        <p class="mb-2">{{ comment.text }}</p>
-
-        <a
-          href="{% url 'country_detail' comment.country.slug %}"
-          class="btn btn-sm btn-outline-primary"
-        >
-          View country
-        </a>
-
-        <a
-          href="{% url 'edit_comment' comment.id %}"
-          class="btn btn-sm btn-outline-secondary ms-1"
-        >
-          Edit
-        </a>
-
-        <form
-          method="post"
-          action="{% url 'delete_comment' comment.id %}"
-          class="d-inline ms-1"
-        >
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-danger">
-            Delete
-          </button>
-        </form>
-      </div>
+<header class="wrap profile-head">
+  <span class="avatar">{{ user.username|slice:":2"|upper }}</span>
+  <div>
+    <h1 style="font-size:1.9rem;margin-bottom:.25rem">{{ user.get_full_name|default:user.username }}</h1>
+    <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+      <span class="level">{{ level }}</span>
+      <span class="level-progress">
+        {{ contributions }} contribution{{ contributions|pluralize }}{% if progress %} · {{ progress.remaining }} more to {{ progress.label }}
+        <span class="meter" style="margin-top:.35rem"><i style="width:{{ progress.percent }}%"></i></span>{% endif %}
+      </span>
     </div>
-  {% empty %}
-    <p class="text-muted">You haven’t written any comments yet.</p>
-  {% endfor %}
+  </div>
+  <div style="margin-left:auto" class="mini-stats">
+    <div class="card mini-stat"><b>{{ experience_count }}</b><span>experience{{ experience_count|pluralize }}</span></div>
+    <div class="card mini-stat"><b>{{ question_count }}</b><span>question{{ question_count|pluralize }}</span></div>
+    <div class="card mini-stat"><b>{{ country_count }}</b><span>countr{{ country_count|pluralize:"y,ies" }}</span></div>
+  </div>
+</header>
+
+{% if stamps %}
+<div class="wrap" style="margin-bottom:1.4rem">
+  <div class="card card-pad" style="display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap">
+    <span class="eyebrow" style="margin:0">Stamps collected</span>
+    <div class="stamp-shelf">
+      {% for s in stamps %}
+        {% if s.outcome == 'approved' %}<span class="stamp stamp-approved{% cycle '' ' upright' %}">{{ s.country.sticker_code }} · Approved</span>
+        {% elif s.outcome == 'rejected' %}<span class="stamp stamp-rejected{% cycle '' ' upright' %}">{{ s.country.sticker_code }} · Rejected</span>
+        {% else %}<span class="stamp stamp-info{% cycle '' ' upright' %}">{{ s.country.sticker_code }} · In progress</span>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="wrap section" style="padding-top:0">
+  {% if comments %}
+    <div class="tabs" data-tabs role="tablist">
+      <button data-filter="all" aria-selected="true">All activity</button>
+      <button data-filter="experience" aria-selected="false">Experiences</button>
+      <button data-filter="question" aria-selected="false">Questions</button>
+    </div>
+
+    <div class="timeline">
+      {% for c in comments %}
+        {% include "partials/comment_card.html" with c=c on_profile=True %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=90 h=95 wave=True %}
+      <h3>Your journal is empty</h3>
+      <p>Pick a country and ask a question or share how your application went — it all shows up here.</p>
+      <a class="btn btn-primary" href="{% url 'home' %}#countries">Browse countries</a>
+    </div>
+  {% endif %}
+
+  <div style="margin-top:2rem"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Traveler levels grow with your participation — questions count too.</div></div></div>
+</div>
 {% endblock %}
