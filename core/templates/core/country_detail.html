@@ -14,6 +14,7 @@
       {% if stats.approval_rate is not None %}<span class="chip chip-approve">{{ stats.approval_rate }}% approved</span>{% endif %}
       <span class="chip chip-neutral">{{ stats.experiences }} experience{{ stats.experiences|pluralize }}</span>
       {% if stats.last_appointment %}<span class="chip chip-amber">Latest appointment reported {{ stats.last_appointment|date:"M j" }}</span>{% endif %}
+      {% if last_opening %}<span class="chip chip-amber">Last opening reported {{ last_opening|date:"M j" }}</span>{% endif %}
     </div>
   </div>
 </header>
@@ -133,16 +134,47 @@
 
   <aside class="side-sticky">
     <section class="card predict" aria-label="Appointment outlook">
-      <div class="predict-head">{% include "partials/buddy.html" with w=44 h=46 %}<h3>Appointment outlook</h3></div>
+      <div class="predict-head">{% include "partials/buddy.html" with w=44 h=46 pose="coffee" %}<h3>Appointment outlook</h3></div>
       <div class="predict-body">
-        {# Prediction model isn't built yet — show honest progress instead of a fake window #}
-        <div class="coming-soon">
-          <b>Coming soon</b>
-          We'll estimate the next opening window once enough appointment dates are shared.
-        </div>
-        <div class="meter" role="img" aria-label="Data collected"><i style="width:{% widthratio stats.dated_appointments 30 100 %}%;max-width:100%"></i></div>
-        <div class="predict-meta">{{ stats.dated_appointments }} of 30 dated appointments collected. Not official information.</div>
+        {% if prediction %}
+          <div class="pass-label">Next opening window · likely</div>
+          <div class="predict-window">{{ prediction.start|date:"M j" }} – {{ prediction.end|date:"M j" }}</div>
+          <div class="meter" role="img" aria-label="{{ prediction.confidence }} confidence, {{ prediction.meter }} percent"><i style="width:{{ prediction.meter }}%"></i></div>
+          <div class="predict-meta">Community data · {{ prediction.confidence }} confidence · based on {{ opening_count }} openings reported by the community. Not official information.</div>
+        {% else %}
+          <div style="text-align:center;margin-bottom:.7rem">{% include "partials/buddy.html" with w=88 h=93 pose="coffee" %}</div>
+          <div class="coming-soon">
+            <b>Still waiting for enough appointment data.</b>
+            {{ opening_count }} of 5 openings reported
+          </div>
+          <div class="predict-meta">Community data. Not official information.</div>
+        {% endif %}
       </div>
+    </section>
+
+    <section class="card card-pad" aria-label="Report an opening">
+      <h3>Report an opening</h3>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'report_opening' country.slug %}" novalidate>
+          {% csrf_token %}
+          {% if opening_form.non_field_errors %}<div class="form-errors">{{ opening_form.non_field_errors }}</div>{% endif %}
+          <div class="field">
+            <label for="{{ opening_form.city.id_for_label }}">City (optional)</label>
+            {{ opening_form.city }}
+            {{ opening_form.city.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ opening_form.opened_on.id_for_label }}">Date slots opened</label>
+            {{ opening_form.opened_on }}
+            {{ opening_form.opened_on.errors }}
+            <div class="hint">The day new slots appeared.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Report an opening</button>
+        </form>
+      {% else %}
+        <p class="muted small">Sign in to tell the community when appointment slots opened.</p>
+        <a class="btn btn-primary btn-sm" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Report an opening</a>
+      {% endif %}
     </section>
 
     <div class="mini-stats">

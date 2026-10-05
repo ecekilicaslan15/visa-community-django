@@ -6,6 +6,11 @@ urlpatterns = [
     path("insights/", views.insights, name="insights"),
     path("design-system/", views.design_system, name="design_system"),
     path("countries/<slug:slug>/", views.country_detail, name="country_detail"),
+    path(
+        "countries/<slug:slug>/openings/",
+        views.report_opening,
+        name="report_opening",
+    ),
     path("comments/<int:comment_id>/", views.comment_thread, name="comment_thread"),
     path(
         "comments/<int:comment_id>/reply/",

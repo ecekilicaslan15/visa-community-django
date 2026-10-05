@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Comment, Reply, Reply
+from .models import Comment, OpeningReport, Reply, opening_date_problem
 
 
 class CommentForm(forms.ModelForm):
@@ -72,3 +72,59 @@ class ReplyForm(forms.ModelForm):
                 }
             ),
         }
+
+
+class OpeningReportForm(forms.ModelForm):
+    """City and opening date. The view sets the traveler and the country."""
+
+    class Meta:
+        model = OpeningReport
+        fields = ["city", "opened_on"]
+        labels = {
+            "city": "City (optional)",
+            "opened_on": "Date slots opened",
+        }
+        widgets = {
+            "city": forms.TextInput(
+                attrs={"class": "input", "placeholder": "e.g. Istanbul", "maxlength": 100}
+            ),
+            "opened_on": forms.DateInput(
+                attrs={"class": "input", "type": "date"},
+                format="%Y-%m-%d",
+            ),
+        }
+
+    def __init__(self, *args, user=None, country=None, **kwargs):
+        self.user = user
+        self.country = country
+        super().__init__(*args, **kwargs)
+        self.fields["opened_on"].input_formats = ["%Y-%m-%d"]
+
+    def clean_city(self):
+        return (self.cleaned_data.get("city") or "").strip()
+
+    def clean_opened_on(self):
+        opened_on = self.cleaned_data["opened_on"]
+        problem = opening_date_problem(opened_on)
+        if problem:
+            raise forms.ValidationError(problem)
+        return opened_on
+
+    def clean(self):
+        cleaned = super().clean()
+        opened_on = cleaned.get("opened_on")
+        if (
+            opened_on
+            and self.user
+            and self.country
+            and OpeningReport.objects.filter(
+                user=self.user,
+                country=self.country,
+                opened_on=opened_on,
+            ).exists()
+        ):
+            self.add_error(
+                "opened_on",
+                "You already reported this opening date for this country.",
+            )
+        return cleaned

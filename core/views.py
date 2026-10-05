@@ -2,14 +2,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.db.models import Avg, Count, Max, Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .forms import CommentForm, ReplyForm
+from .forms import CommentForm, OpeningReportForm, ReplyForm
 from .models import Comment, Country, Reply
+from .predictions import predict_next_window
 
 EXPERIENCE = Comment.KIND_EXPERIENCE
 APPROVED = Comment.OUTCOME_APPROVED
@@ -158,6 +160,45 @@ def country_detail(request, slug):
     else:
         form = CommentForm(initial={"kind": Comment.KIND_QUESTION})
 
+    return _render_country(request, country, form)
+
+
+def report_opening(request, slug):
+    """POST-only. A traveler reports the day appointment slots opened."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+
+    country = get_object_or_404(Country, slug=slug, is_active=True)
+    opening_form = OpeningReportForm(request.POST, user=request.user, country=country)
+    if opening_form.is_valid():
+        report = opening_form.save(commit=False)
+        report.user = request.user
+        report.country = country
+        try:
+            report.save()
+        except IntegrityError:
+            opening_form.add_error(
+                "opened_on",
+                "You already reported this opening date for this country.",
+            )
+        else:
+            messages.success(
+                request,
+                "Thanks — that opening is now part of the community outlook.",
+            )
+            return redirect("country_detail", slug=slug)
+
+    return _render_country(
+        request,
+        country,
+        CommentForm(initial={"kind": Comment.KIND_QUESTION}),
+        opening_form=opening_form,
+    )
+
+
+def _render_country(request, country, comment_form, opening_form=None):
     comment_list = comments_for_cards(country.comments.all()).order_by("-created_at")
     comments = Paginator(comment_list, 10).get_page(request.GET.get("page"))
 
@@ -166,6 +207,15 @@ def country_detail(request, slug):
         liked_ids = set(
             request.user.liked_comments.filter(country=country).values_list("id", flat=True)
         )
+        if opening_form is None:
+            opening_form = OpeningReportForm(user=request.user, country=country)
+
+    # Newest report first. Duplicate dates still count as separate reports.
+    opened_on = list(
+        country.opening_reports.order_by("-created_at", "-id").values_list(
+            "opened_on", flat=True
+        )
+    )
 
     return render(
         request,
@@ -173,9 +223,13 @@ def country_detail(request, slug):
         {
             "country": country,
             "comments": comments,
-            "form": form,
+            "form": comment_form,
             "stats": country_stats(country),
             "liked_ids": liked_ids,
+            "opening_form": opening_form,
+            "opening_count": len(opened_on),
+            "last_opening": opened_on[0] if opened_on else None,
+            "prediction": predict_next_window(opened_on),
         },
     )
 

@@ -1,11 +1,18 @@
+from datetime import date, datetime, timedelta
+
+from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.db import connection
-from django.test import TestCase
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, connection, transaction
+from django.test import SimpleTestCase, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.formats import date_format
 
 from accounts.names import avatar_class
-from core.models import Comment, Country, Reply
+from core.models import Comment, Country, OpeningReport, Reply, earliest_opening_date, opening_date_problem
+from core.predictions import predict_next_window
 
 User = get_user_model()
 PASSWORD = "Traveler-pass-2026"
@@ -271,4 +278,259 @@ class ReplyTests(TestCase):
             )
             Reply.objects.create(comment=comment, user=self.other, text=f"Answer {i}")
         self.assertEqual(queries(), baseline)
+
+
+def _month_day(value):
+    return date_format(value, "M j")
+
+
+class PredictionTests(SimpleTestCase):
+    def test_fewer_than_five_distinct_dates_is_not_a_window(self):
+        day = date(2026, 3, 1)
+        dates = [day + timedelta(days=10 * i) for i in range(4)]
+        self.assertIsNone(predict_next_window(dates, today=day))
+        self.assertIsNone(predict_next_window(dates + dates, today=day))
+        self.assertIsNone(predict_next_window([], today=day))
+
+    def test_equal_gaps_use_the_median_and_a_two_day_window(self):
+        dates = [
+            date(2026, 1, 1),
+            date(2026, 1, 11),
+            date(2026, 1, 21),
+            date(2026, 1, 31),
+            date(2026, 2, 10),
+        ]
+        result = predict_next_window(dates, today=date(2026, 2, 1))
+        self.assertEqual(result["expected"], date(2026, 2, 20))
+        self.assertEqual(result["start"], date(2026, 2, 18))
+        self.assertEqual(result["end"], date(2026, 2, 22))
+        self.assertEqual(result["confidence"], "low")
+        self.assertEqual(result["meter"], 40)
+        self.assertEqual(result["reports"], 5)
+        self.assertEqual(result["median_gap_days"], 10)
+
+        # A window that still includes today stays where it is.
+        same = predict_next_window(dates, today=date(2026, 2, 22))
+        self.assertEqual(same["start"], date(2026, 2, 18))
+        self.assertEqual(same["end"], date(2026, 2, 22))
+
+    def test_a_window_already_in_the_past_rolls_forward_by_the_median_gap(self):
+        dates = [
+            date(2025, 11, 1),
+            date(2025, 11, 11),
+            date(2025, 11, 21),
+            date(2025, 12, 1),
+            date(2025, 12, 11),
+        ]
+        result = predict_next_window(dates, today=date(2026, 1, 15))
+        self.assertEqual(result["expected"], date(2026, 1, 20))
+        self.assertEqual(result["start"], date(2026, 1, 18))
+        self.assertEqual(result["end"], date(2026, 1, 22))
+
+    def test_duplicate_reports_raise_confidence_without_adding_gaps(self):
+        dates = [
+            date(2026, 1, 1),
+            date(2026, 1, 11),
+            date(2026, 1, 21),
+            date(2026, 1, 31),
+            date(2026, 2, 10),
+        ]
+        result = predict_next_window(dates + dates, today=date(2026, 2, 1))
+        self.assertEqual(result["reports"], 10)
+        self.assertEqual(result["confidence"], "medium")
+        self.assertEqual(result["meter"], 60)
+        self.assertEqual(result["expected"], date(2026, 2, 20))
+
+    def test_confidence_bands_and_a_spread_that_lowers_one_step(self):
+        start = date(2026, 1, 1)
+        tight = [start + timedelta(days=7 * i) for i in range(10)]
+        medium = predict_next_window(tight, today=start)
+        self.assertEqual(medium["confidence"], "medium")
+        self.assertEqual(medium["meter"], 60)
+
+        twenty = [start + timedelta(days=3 * i) for i in range(20)]
+        self.assertEqual(predict_next_window(twenty, today=start)["confidence"], "medium-high")
+        self.assertEqual(predict_next_window(twenty, today=start)["meter"], 80)
+
+        forty = [start + timedelta(days=3 * i) for i in range(40)]
+        self.assertEqual(predict_next_window(forty, today=start)["confidence"], "high")
+        self.assertEqual(predict_next_window(forty, today=start)["meter"], 95)
+
+        gaps = [5, 10, 15, 20, 40, 60, 80, 100, 120]
+        spread = [start]
+        for gap in gaps:
+            spread.append(spread[-1] + timedelta(days=gap))
+        lowered = predict_next_window(spread, today=start)
+        self.assertEqual(len(spread), 10)
+        self.assertEqual(lowered["confidence"], "low")
+        self.assertEqual(lowered["meter"], 40)
+
+    def test_datetimes_are_read_as_calendar_dates(self):
+        dates = [datetime(2026, 1, 1, 15, 30) + timedelta(days=10 * i) for i in range(5)]
+        result = predict_next_window(dates, today=date(2026, 1, 1))
+        self.assertEqual(result["expected"], date(2026, 2, 20))
+
+
+class OpeningDateTests(SimpleTestCase):
+    def test_one_year_is_allowed_and_older_or_future_dates_are_not(self):
+        today = date(2026, 10, 5)
+        self.assertIsNone(opening_date_problem(today, today=today))
+        self.assertIsNone(opening_date_problem(date(2025, 10, 5), today=today))
+        self.assertIn("future", opening_date_problem(date(2026, 10, 6), today=today))
+        self.assertIn("year", opening_date_problem(date(2025, 10, 4), today=today))
+
+    def test_a_leap_day_uses_28_february_as_the_oldest_accepted_date(self):
+        today = date(2024, 2, 29)
+        self.assertEqual(earliest_opening_date(today), date(2023, 2, 28))
+        self.assertIsNone(opening_date_problem(date(2023, 2, 28), today=today))
+        self.assertIsNotNone(opening_date_problem(date(2023, 2, 27), today=today))
+
+
+class OpeningReportTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("ayse", "ayse@example.com", PASSWORD)
+        self.other = User.objects.create_user("mehmet", "mehmet@example.com", PASSWORD)
+        self.country = Country.objects.create(name="France", slug="france", code="FR")
+        self.spain = Country.objects.create(name="Spain", slug="spain", code="ES", is_active=False)
+        self.url = reverse("report_opening", args=["france"])
+
+    def test_opening_reports_are_registered_in_the_admin(self):
+        self.assertIn(OpeningReport, admin.site._registry)
+
+    def test_reporting_is_post_only_and_anonymous_posts_go_to_login(self):
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+        self.client.logout()
+
+        response = self.client.post(self.url, {"opened_on": timezone.localdate().isoformat()})
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
+    def test_country_page_asks_visitors_to_sign_in_before_reporting(self):
+        response = self.client.get(reverse("country_detail", args=["france"]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Still waiting for enough appointment data.")
+        self.assertContains(response, "0 of 5 openings reported")
+        self.assertContains(response, "Community data. Not official information.")
+        self.assertContains(response, "?next=/countries/france/")
+        self.assertNotContains(response, "Coming soon")
+        self.assertNotContains(response, "of 30 dated")
+
+    def test_a_report_is_saved_for_the_signed_in_user_and_the_url_country(self):
+        today = timezone.localdate()
+        self.client.force_login(self.user)
+        response = self.client.post(
+            self.url,
+            {
+                "opened_on": today.isoformat(),
+                "city": "  Ankara  ",
+                "user": self.other.id,
+                "country": self.spain.id,
+            },
+            follow=True,
+        )
+        self.assertContains(response, "that opening is now part of the community outlook")
+        report = OpeningReport.objects.get()
+        self.assertEqual(report.user, self.user)
+        self.assertEqual(report.country, self.country)
+        self.assertEqual(report.city, "Ankara")
+        self.assertEqual(report.opened_on, today)
+        self.assertContains(response, f"Last opening reported {_month_day(today)}")
+        self.assertContains(response, "1 of 5 openings reported")
+
+    def test_future_old_and_duplicate_dates_are_rejected(self):
+        today = timezone.localdate()
+        self.client.force_login(self.user)
+        response = self.client.post(self.url, {"opened_on": (today + timedelta(days=1)).isoformat()})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "in the future")
+        self.assertFalse(OpeningReport.objects.exists())
+
+        too_old = earliest_opening_date(today) - timedelta(days=1)
+        response = self.client.post(self.url, {"opened_on": too_old.isoformat()})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "more than a year ago")
+        self.assertFalse(OpeningReport.objects.exists())
+
+        response = self.client.post(self.url, {"opened_on": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This field is required")
+
+        self.client.post(self.url, {"opened_on": today.isoformat(), "city": "Istanbul"})
+        response = self.client.post(self.url, {"opened_on": today.isoformat(), "city": "Istanbul"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already reported this opening date")
+        self.assertEqual(OpeningReport.objects.count(), 1)
+
+        self.client.force_login(self.other)
+        response = self.client.post(self.url, {"opened_on": today.isoformat()})
+        self.assertRedirects(response, reverse("country_detail", args=["france"]))
+        self.assertEqual(OpeningReport.objects.count(), 2)
+
+    def test_the_same_user_can_report_the_same_day_for_another_country(self):
+        italy = Country.objects.create(name="Italy", slug="italy", code="IT")
+        today = timezone.localdate()
+        OpeningReport.objects.create(country=self.country, user=self.user, opened_on=today)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("report_opening", args=["italy"]),
+            {"opened_on": today.isoformat()},
+        )
+        self.assertRedirects(response, reverse("country_detail", args=["italy"]))
+        self.assertEqual(OpeningReport.objects.filter(user=self.user).count(), 2)
+
+    def test_inactive_country_is_not_found(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("report_opening", args=["spain"]),
+            {"opened_on": timezone.localdate().isoformat()},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.client.get(reverse("country_detail", args=["spain"])).status_code, 404)
+
+    def test_model_rejects_a_future_date_and_a_repeated_report(self):
+        today = timezone.localdate()
+        report = OpeningReport(country=self.country, user=self.user, opened_on=today + timedelta(days=1))
+        with self.assertRaises(ValidationError):
+            report.full_clean()
+
+        OpeningReport.objects.create(country=self.country, user=self.user, opened_on=today)
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                OpeningReport.objects.create(country=self.country, user=self.user, opened_on=today)
+
+    def test_the_hero_chip_uses_the_newest_report(self):
+        today = timezone.localdate()
+        newer_opening = today - timedelta(days=3)
+        older_opening = today - timedelta(days=12)
+        OpeningReport.objects.create(country=self.country, user=self.user, opened_on=newer_opening)
+        OpeningReport.objects.create(country=self.country, user=self.other, opened_on=older_opening)
+        response = self.client.get(reverse("country_detail", args=["france"]))
+        self.assertContains(response, f"Last opening reported {_month_day(older_opening)}")
+        self.assertNotContains(response, f"Last opening reported {_month_day(newer_opening)}")
+        self.assertContains(response, "2 of 5 openings reported")
+        self.assertContains(response, "Still waiting for enough appointment data.")
+        self.assertNotContains(response, "Next opening window")
+
+    def test_five_distinct_openings_show_the_community_window(self):
+        today = timezone.localdate()
+        for offset in range(4, -1, -1):
+            OpeningReport.objects.create(
+                country=self.country,
+                user=self.user,
+                opened_on=today - timedelta(days=10 * offset),
+                city="Istanbul",
+            )
+        response = self.client.get(reverse("country_detail", args=["france"]))
+        start = today + timedelta(days=8)
+        end = today + timedelta(days=12)
+        self.assertContains(response, "Next opening window · likely")
+        self.assertContains(response, f"{_month_day(start)} – {_month_day(end)}")
+        self.assertContains(response, "width:40%")
+        self.assertContains(
+            response,
+            "Community data · low confidence · based on 5 openings reported by the community. Not official information.",
+        )
+        self.assertNotContains(response, "Still waiting for enough appointment data.")
+        self.assertContains(response, f"Last opening reported {_month_day(today)}")
 

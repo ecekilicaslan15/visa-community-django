@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Comment, Country, Reply
+from .models import Comment, Country, OpeningReport, Reply
 
 
 @admin.register(Country)
@@ -42,3 +42,13 @@ class ReplyAdmin(admin.ModelAdmin):
         return obj.text[:40]
 
     short_text.short_description = "Reply"
+
+
+@admin.register(OpeningReport)
+class OpeningReportAdmin(admin.ModelAdmin):
+    list_display = ("id", "country", "user", "city", "opened_on", "created_at")
+    list_filter = ("country", "opened_on")
+    search_fields = ("city", "user__username", "country__name")
+    ordering = ("-opened_on", "-created_at")
+    list_select_related = ("country", "user")
+    raw_id_fields = ("country", "user")

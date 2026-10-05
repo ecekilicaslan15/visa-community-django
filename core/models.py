@@ -1,5 +1,9 @@
+from datetime import date
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 
 class Country(models.Model):
@@ -106,3 +110,60 @@ class Reply(models.Model):
 
     def __str__(self):
         return f"{self.user} on {self.comment_id}"
+
+
+def earliest_opening_date(today):
+    """The oldest opening date still accepted: one year before today."""
+    try:
+        return today.replace(year=today.year - 1)
+    except ValueError:
+        # 29 February has no match in the previous year.
+        return date(today.year - 1, 2, 28)
+
+
+def opening_date_problem(opened_on, today=None):
+    """A message when the date is in the future or more than a year old."""
+    if opened_on is None:
+        return None
+    today = today or timezone.localdate()
+    if opened_on > today:
+        return "The opening date can't be in the future."
+    if opened_on < earliest_opening_date(today):
+        return "The opening date can't be more than a year ago."
+    return None
+
+
+class OpeningReport(models.Model):
+    """A traveler reporting that appointment slots opened on a given day."""
+
+    country = models.ForeignKey(
+        Country,
+        related_name="opening_reports",
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="opening_reports",
+        on_delete=models.CASCADE,
+    )
+    city = models.CharField(max_length=100, blank=True)
+    opened_on = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "country", "opened_on"],
+                name="unique_opening_per_user_country_day",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.country} {self.opened_on}"
+
+    def clean(self):
+        super().clean()
+        problem = opening_date_problem(self.opened_on)
+        if problem:
+            raise ValidationError({"opened_on": problem})
