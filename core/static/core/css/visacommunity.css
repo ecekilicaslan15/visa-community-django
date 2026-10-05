@@ -671,3 +671,14 @@ fieldset.field label{ display:block; margin:.25rem 0; font-weight:500; }
 .comment-foot{ flex-wrap:wrap; }
 .search input:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
 .report-reasons label{ font-weight:500; }
+
+/* ============================================================
+   Phase 8 — consent checkbox, remember me, confirm banner
+   ============================================================ */
+.field input[type="checkbox"]{ width:auto; }
+.remember{ display:flex; align-items:flex-start; gap:.5rem; font-weight:500; }
+.tip .link-btn{
+  background:none; border:0; padding:0; margin-left:.35rem;
+  color:var(--teal-deep); font:inherit; font-weight:650; cursor:pointer;
+  text-decoration:underline;
+}

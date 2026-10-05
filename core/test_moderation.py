@@ -205,7 +205,7 @@ class StaticPageTests(TestCase):
     def test_guidelines_privacy_and_contact_are_linked(self):
         for name, text in (
             ("guidelines", "Leave out passport numbers"),
-            ("privacy", "hashed password"),
+            ("privacy", "Data controller"),
             ("contact", "contact@visacommunity.example"),
         ):
             response = self.client.get(reverse(name))

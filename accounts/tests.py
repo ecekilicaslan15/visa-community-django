@@ -21,6 +21,7 @@ def signup_data(**overrides):
         "last_name": "Kaya",
         "password1": PASSWORD,
         "password2": PASSWORD,
+        "privacy_accepted": "on",
     }
     data.update(overrides)
     return data

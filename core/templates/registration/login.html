@@ -25,6 +25,12 @@
           <input id="id_password" name="password" class="input" type="password" autocomplete="current-password" required>
           {{ form.password.errors }}
         </div>
+        <div class="field">
+          <label class="remember" for="id_remember_me">
+            <input type="checkbox" name="remember_me" id="id_remember_me">
+            Remember me
+          </label>
+        </div>
         <button class="btn btn-primary btn-block" type="submit">Sign in</button>
       </form>
 

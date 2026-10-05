@@ -1,0 +1,9 @@
+Confirm your email for VisaCommunity.
+
+{{ user.get_username }}, use this link to confirm {{ user.email }}:
+
+{{ verify_url }}
+
+The link works for 3 days. If you didn't create this account, you can ignore this email.
+
+— VisaCommunity

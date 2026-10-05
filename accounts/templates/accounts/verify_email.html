@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm email · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap section" style="max-width:640px">
+  <div class="empty">
+    {% include "partials/buddy.html" with w=120 h=127 pose="suitcase" %}
+    <h1>This confirmation link isn't valid</h1>
+    <p>It may have expired, or the address may have changed. Sign in and use Resend email to get a new link. Links last 3 days.</p>
+    <a class="btn btn-primary" href="{% url 'login' %}">Sign in</a>
+  </div>
+</div>
+{% endblock %}

@@ -45,6 +45,23 @@
   </div>
 {% endif %}
 
+{% if user.is_authenticated and not user.profile.email_verified %}
+  <div class="wrap" style="padding-top:1rem">
+    <div class="tip">
+      <span class="bulb">💡</span>
+      <div>
+        <b>Please confirm your email</b>
+        — We sent a link to {{ user.email }}. You can read the site, and post after you confirm.
+        <form method="post" action="{% url 'accounts:resend_verification' %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="link-btn">Resend email</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 {% block content %}{% endblock %}
 
 {% block footer %}

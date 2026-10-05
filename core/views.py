@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import CommentForm, ContentReportForm, OpeningReportForm, ReplyForm
+from accounts.mail import CONFIRM_BEFORE_POSTING, email_is_confirmed
+
 from .limits import HOURLY_POST_MESSAGE, hourly_post_limit_reached
 from .models import Comment, ContentReport, Country, Reply
 from .predictions import predict_next_window
@@ -159,7 +161,9 @@ def country_detail(request, slug):
             return redirect_to_login(request.get_full_path())
         form = CommentForm(request.POST)
         if form.is_valid():
-            if hourly_post_limit_reached(request.user):
+            if not email_is_confirmed(request.user):
+                messages.error(request, CONFIRM_BEFORE_POSTING)
+            elif hourly_post_limit_reached(request.user):
                 messages.error(request, HOURLY_POST_MESSAGE)
             else:
                 new_comment = form.save(commit=False)
@@ -182,6 +186,9 @@ def report_opening(request, slug):
         return redirect_to_login(request.get_full_path())
 
     country = get_object_or_404(Country, slug=slug, is_active=True)
+    if not email_is_confirmed(request.user):
+        messages.error(request, CONFIRM_BEFORE_POSTING)
+        return redirect("country_detail", slug=slug)
     opening_form = OpeningReportForm(request.POST, user=request.user, country=country)
     if opening_form.is_valid() and hourly_post_limit_reached(request.user):
         messages.error(request, HOURLY_POST_MESSAGE)
@@ -404,7 +411,9 @@ def create_reply(request, comment_id):
     )
     form = ReplyForm(request.POST)
     if form.is_valid():
-        if hourly_post_limit_reached(request.user):
+        if not email_is_confirmed(request.user):
+            messages.error(request, CONFIRM_BEFORE_POSTING)
+        elif hourly_post_limit_reached(request.user):
             messages.error(request, HOURLY_POST_MESSAGE)
         else:
             reply = form.save(commit=False)

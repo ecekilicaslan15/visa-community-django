@@ -1,12 +1,16 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 User = get_user_model()
 
 
 def _style_inputs(form):
     for field in form.fields.values():
+        if isinstance(field.widget, forms.CheckboxInput):
+            continue
         field.widget.attrs["class"] = "input"
 
 
@@ -14,6 +18,10 @@ class SignUpForm(UserCreationForm):
     """Username, required unique email, password, and optional name."""
 
     email = forms.EmailField(label="Email", required=True)
+    privacy_accepted = forms.BooleanField(
+        required=True,
+        error_messages={"required": "Please read and accept the Privacy Notice."},
+    )
     first_name = forms.CharField(
         label="First name (optional)",
         required=False,
@@ -36,10 +44,16 @@ class SignUpForm(UserCreationForm):
         "last_name",
         "password1",
         "password2",
+        "privacy_accepted",
     ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        notice = reverse("privacy")
+        self.fields["privacy_accepted"].label = mark_safe(
+            'I have read the <a href="%s">Privacy Notice (KVKK Aydınlatma Metni)</a>'
+            % notice
+        )
         _style_inputs(self)
         self.fields["email"].widget.attrs["autocomplete"] = "email"
         self.fields["first_name"].widget.attrs["autocomplete"] = "given-name"
@@ -54,6 +68,8 @@ class SignUpForm(UserCreationForm):
 
 class EmailOrUsernameAuthenticationForm(AuthenticationForm):
     """Same login form, labelled for username or email."""
+
+    remember_me = forms.BooleanField(required=False, label="Remember me")
 
     error_messages = {
         **AuthenticationForm.error_messages,
@@ -80,6 +96,7 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._original_email = (self.instance.email or "") if self.instance.pk else ""
         self.fields["email"].required = True
         _style_inputs(self)
         self.fields["email"].widget.attrs["autocomplete"] = "email"
@@ -92,6 +109,11 @@ class ProfileForm(forms.ModelForm):
         if taken.exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
+
+    @property
+    def email_changed(self):
+        new_email = self.cleaned_data.get("email", "")
+        return new_email.casefold() != self._original_email.casefold()
 
 
 class DeleteAccountForm(forms.Form):

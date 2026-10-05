@@ -5,16 +5,33 @@
 {% block content %}
 <div class="wrap section" style="max-width:720px">
   <div class="eyebrow">Community</div>
-  <h1 style="font-size:2.2rem">Privacy</h1>
-  <p class="lead muted">What this site stores, and what it doesn't.</p>
+  <h1 style="font-size:2.2rem">Privacy notice</h1>
+  <p class="lead muted">KVKK Aydınlatma Metni. This is the notice for this community project. Replace the controller details before a public launch.</p>
 
   <div class="card card-pad">
+    <h2>Data controller</h2>
+    <p>VisaCommunity (placeholder name). Contact: <a href="mailto:contact@visacommunity.example">contact@visacommunity.example</a>.</p>
+
+    <h2>What we store</h2>
     <ul>
-      <li>Your account stores a username, an email address, an optional first and last name, and a hashed password.</li>
-      <li>Posts, replies, helpful marks, appointment opening dates, and reports you send are stored with your account.</li>
-      <li>Password reset messages are sent to the email on your account.</li>
-      <li>Deleting your account deletes that user and the posts tied to it.</li>
-      <li>We don't sell this data. VisaCommunity is a community project, not a visa agency.</li>
+      <li>Your username, email address, and optional first and last name.</li>
+      <li>The time you accepted this notice, and whether your email is confirmed.</li>
+      <li>Posts, replies, helpful marks, and appointment opening reports you send.</li>
+      <li>Your IP address in sign-in attempt logs, together with the username you typed and the time.</li>
+    </ul>
+    <p>Passwords are stored only as a hash. We don't sell this data.</p>
+
+    <h2>Why</h2>
+    <p>To run the community, let you sign in, send password and confirmation email, and block repeated failed sign-ins.</p>
+
+    <h2>How long</h2>
+    <p>Account data stays until you delete the account. A sign-in lock lasts 30 minutes. The attempt log itself is kept so those repeated failures can be blocked, and it is not used for advertising.</p>
+
+    <h2>Your rights</h2>
+    <ul>
+      <li>Access: <a href="{% url 'accounts:settings' %}">download your data</a> from account settings.</li>
+      <li>Correction: change your name or email in <a href="{% url 'accounts:settings' %}">account settings</a>.</li>
+      <li>Deletion: delete the account from <a href="{% url 'accounts:settings' %}">account settings</a>. That removes the user and the posts tied to it.</li>
     </ul>
   </div>
 </div>

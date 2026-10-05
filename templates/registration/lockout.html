@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in paused · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="auth">
+  {% include "partials/auth_side.html" with heading="Take a short break." %}
+  <div class="auth-main">
+    <div class="auth-card">
+      <h2 style="margin-bottom:.2rem">Too many sign-in attempts</h2>
+      <div class="tip" style="margin-top:1rem">
+        <span class="bulb">💡</span>
+        <div>Too many sign-in attempts. Please wait 30 minutes and try again.</div>
+      </div>
+      <p class="auth-alt"><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

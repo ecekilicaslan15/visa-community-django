@@ -43,6 +43,12 @@
     </div>
 
     <div class="card card-pad">
+      <h2>Your data</h2>
+      <p class="muted">A JSON file of your account, posts, replies, and opening reports. It does not include anyone else's.</p>
+      <a class="btn btn-ghost" href="{% url 'accounts:download_data' %}">Download my data</a>
+    </div>
+
+    <div class="card card-pad">
       <h2>Delete account</h2>
       <p>This permanently deletes your account and everything you posted. It can't be undone.</p>
       <form method="post" action="{% url 'accounts:delete_account' %}" novalidate>

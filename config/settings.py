@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -75,6 +77,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'axes',
+
     'accounts',
 
     'core',
@@ -89,6 +93,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -115,12 +120,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASE_URL selects Postgres in production. Without it, SQLite stays local.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
+if "sqlite" in DATABASES["default"]["ENGINE"]:
+    DATABASES["default"]["CONN_MAX_AGE"] = 0
 
 
 # Password validation
@@ -132,6 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 10},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -152,6 +161,12 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+# Two weeks. "Remember me" keeps this; an unchecked box ends the session with the browser.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
+
+# Email confirmation links use the same timeout as password reset.
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3
 
 
 # Static files (CSS, JavaScript, Images)
@@ -190,9 +205,20 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Username or email. ModelBackend stays as a fallback for username logins.
 AUTHENTICATION_BACKENDS = [
+    "accounts.backends.QuietAxesBackend",
     "accounts.backends.EmailOrUsernameBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+# Lock the IP and username together after 5 failed sign-ins, for 30 minutes.
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=30)
+AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = "registration/lockout.html"
+AXES_COOLOFF_MESSAGE = (
+    "Too many sign-in attempts. Please wait 30 minutes and try again."
+)
 
 # Development prints password-reset mail in the runserver console.
 EMAIL_BACKEND = os.environ.get(
