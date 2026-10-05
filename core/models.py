@@ -78,3 +78,31 @@ class Comment(models.Model):
     @property
     def is_question(self):
         return self.kind == self.KIND_QUESTION
+
+
+class Reply(models.Model):
+    """A response on a question or experience thread."""
+
+    comment = models.ForeignKey(
+        Comment,
+        related_name="replies",
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="replies",
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="liked_replies",
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.user} on {self.comment_id}"

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Thread · {{ comment.country.name }} · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap breadcrumb">
+  <a href="{% url 'home' %}">Countries</a> <span aria-hidden="true">›</span>
+  <a href="{% url 'country_detail' comment.country.slug %}">{{ comment.country.name }}</a>
+  <span aria-hidden="true">›</span> Thread
+</div>
+
+<div class="wrap section" style="max-width:760px;padding-top:1.2rem">
+  <div class="timeline">
+    {% include "partials/comment_card.html" with c=comment %}
+    {% for reply in replies %}
+      {% include "partials/reply_card.html" with reply=reply %}
+    {% endfor %}
+  </div>
+
+  <section class="card card-pad" id="reply" aria-label="Write a reply" style="margin-top:.4rem">
+    {% if user.is_authenticated %}
+      <h2 style="font-size:1.25rem">Write a reply</h2>
+      <form method="post" action="{% url 'create_reply' comment.id %}" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="field">
+          <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+          {{ form.text }}
+          {{ form.text.errors }}
+          <div class="counter" data-counter>0 / 1000</div>
+        </div>
+        <button class="btn btn-primary" type="submit">Post reply</button>
+      </form>
+    {% else %}
+      <h2 style="font-size:1.25rem">Sign in to reply</h2>
+      <p class="muted">Join the thread to answer a question or encourage someone after a refusal.</p>
+      <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Sign in to reply</a>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -33,6 +33,10 @@
 
     <p class="comment-body">{% if on_profile %}{{ c.text|truncatechars:180 }}{% else %}{{ c.text|linebreaksbr }}{% endif %}</p>
 
+    {% if c.outcome == 'rejected' and c.reply_count %}
+      <p class="muted small">Community sent encouragement 💛</p>
+    {% endif %}
+
     <div class="comment-foot">
       {% if user.is_authenticated and c.user_id != user.id %}
         <form method="post" action="{% url 'toggle_like' c.id %}" class="inline-form">
@@ -44,10 +48,17 @@
         <span>Helpful · {{ c.like_count }}</span>
       {% endif %}
 
+      {% if c.is_question and not c.reply_count %}
+        <a href="{% url 'comment_thread' c.id %}">Be the first to answer →</a>
+      {% else %}
+        <a href="{% url 'comment_thread' c.id %}">{{ c.reply_count }} repl{{ c.reply_count|pluralize:"y,ies" }}</a>
+      {% endif %}
+      {% if c.last_reply_at %}<span>Last reply {{ c.last_reply_at|timesince }} ago</span>{% endif %}
+
       {% if on_profile %}
         <a href="{% url 'country_detail' c.country.slug %}#c{{ c.id }}">View in {{ c.country.name }} →</a>
       {% elif in_feed %}
-        <a href="{% url 'country_detail' c.country.slug %}#c{{ c.id }}">{% if c.is_question %}Join the discussion{% else %}Read in {{ c.country.name }}{% endif %} →</a>
+        <a href="{% url 'comment_thread' c.id %}">{% if c.is_question %}Join the discussion{% else %}Read in {{ c.country.name }}{% endif %} →</a>
       {% endif %}
 
       {% if c.user_id == user.id %}

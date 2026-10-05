@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Comment
+from .models import Comment, Reply, Reply
 
 
 class CommentForm(forms.ModelForm):
@@ -53,3 +53,22 @@ class CommentForm(forms.ModelForm):
             cleaned["appointment_date"] = None
             cleaned["wait_days"] = None
         return cleaned
+
+
+class ReplyForm(forms.ModelForm):
+    """Reply text only. The view sets the author and the thread."""
+
+    class Meta:
+        model = Reply
+        fields = ["text"]
+        labels = {"text": "Your reply"}
+        widgets = {
+            "text": forms.Textarea(
+                attrs={
+                    "class": "input",
+                    "maxlength": 1000,
+                    "rows": 4,
+                    "data-compose-text": "",
+                }
+            ),
+        }

@@ -8,8 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .forms import CommentForm
-from .models import Comment, Country
+from .forms import CommentForm, ReplyForm
+from .models import Comment, Country, Reply
 
 EXPERIENCE = Comment.KIND_EXPERIENCE
 APPROVED = Comment.OUTCOME_APPROVED
@@ -24,6 +24,25 @@ LEVELS = [
 
 def _percent(part, whole):
     return round(100 * part / whole) if whole else None
+
+
+def comments_for_cards(qs=None):
+    """Comments ready for comment_card: author, country, likes, and reply stats."""
+    if qs is None:
+        qs = Comment.objects.all()
+    return qs.select_related("user", "country").annotate(
+        like_count=Count("likes", distinct=True),
+        reply_count=Count("replies", distinct=True),
+        last_reply_at=Max("replies__created_at"),
+    )
+
+
+def _question_answer_percent():
+    """Share of questions that have at least one reply. Separate queries avoid join inflation."""
+    questions = Comment.objects.filter(kind=Comment.KIND_QUESTION)
+    question_count = questions.count()
+    answered = questions.filter(replies__isnull=False).distinct().count()
+    return _percent(answered, question_count)
 
 
 def _countries_with_stats():
@@ -62,16 +81,14 @@ def home(request):
 
     totals = Comment.objects.aggregate(
         experiences=Count("id", filter=Q(kind=EXPERIENCE)),
-        questions=Count("id", filter=~Q(kind=EXPERIENCE)),
+        questions=Count("id", filter=Q(kind=Comment.KIND_QUESTION)),
     )
     totals["countries"] = Country.objects.filter(is_active=True).count()
+    totals["answered_percent"] = _question_answer_percent()
 
-    recent = (
+    recent = comments_for_cards(
         Comment.objects.filter(country__is_active=True)
-        .select_related("user", "country")
-        .annotate(like_count=Count("likes", distinct=True))
-        .order_by("-created_at")[:3]
-    )
+    ).order_by("-created_at")[:3]
 
     liked_ids = set()
     if request.user.is_authenticated:
@@ -141,11 +158,7 @@ def country_detail(request, slug):
     else:
         form = CommentForm(initial={"kind": Comment.KIND_QUESTION})
 
-    comment_list = (
-        country.comments.select_related("user")
-        .annotate(like_count=Count("likes", distinct=True))
-        .order_by("-created_at")
-    )
+    comment_list = comments_for_cards(country.comments.all()).order_by("-created_at")
     comments = Paginator(comment_list, 10).get_page(request.GET.get("page"))
 
     liked_ids = set()
@@ -201,9 +214,12 @@ def edit_comment(request, comment_id):
 
 @login_required
 def profile(request):
-    comments = (
-        Comment.objects.filter(user=request.user)
-        .select_related("country")
+    comments = list(
+        comments_for_cards(Comment.objects.filter(user=request.user)).order_by("-created_at")
+    )
+    replies = list(
+        Reply.objects.filter(user=request.user)
+        .select_related("user", "comment", "comment__country")
         .annotate(like_count=Count("likes", distinct=True))
         .order_by("-created_at")
     )
@@ -222,7 +238,8 @@ def profile(request):
         elif not stamp["outcome"] and c.is_experience:
             stamp["outcome"] = c.outcome
 
-    contributions = len(comments)
+    contributions = len(comments) + len(replies)
+    question_replies = sum(1 for reply in replies if reply.comment.is_question)
     level = next_level = None
     for i, (minimum, label) in enumerate(LEVELS):
         if contributions >= minimum:
@@ -242,6 +259,7 @@ def profile(request):
         "core/profile.html",
         {
             "comments": comments,
+            "replies": replies,
             "experience_count": experience_count,
             "question_count": question_count,
             "country_count": len(countries),
@@ -249,6 +267,8 @@ def profile(request):
             "contributions": contributions,
             "level": level,
             "progress": progress,
+            "is_community_helper": question_replies >= 10,
+            "liked_reply_ids": set(),
         },
     )
 
@@ -267,6 +287,116 @@ def toggle_like(request, comment_id):
             comment.likes.add(request.user)
 
     return redirect(_next_url(request) or f"/countries/{comment.country.slug}/")
+
+
+def comment_thread(request, comment_id):
+    """Public thread: the original post, replies oldest-first, then a reply box."""
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+    comment = get_object_or_404(
+        comments_for_cards(),
+        id=comment_id,
+        country__is_active=True,
+    )
+    return _render_thread(request, comment, ReplyForm())
+
+
+def create_reply(request, comment_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+
+    comment = get_object_or_404(
+        comments_for_cards(),
+        id=comment_id,
+        country__is_active=True,
+    )
+    form = ReplyForm(request.POST)
+    if form.is_valid():
+        reply = form.save(commit=False)
+        reply.comment = comment
+        reply.user = request.user
+        reply.save()
+        messages.success(request, "Your reply is live.")
+        return redirect("comment_thread", comment_id=comment.id)
+    return _render_thread(request, comment, form)
+
+
+def _render_thread(request, comment, form):
+    replies = (
+        comment.replies.select_related("user")
+        .annotate(like_count=Count("likes", distinct=True))
+        .order_by("created_at")
+    )
+    liked_ids = set()
+    liked_reply_ids = set()
+    if request.user.is_authenticated:
+        if comment.likes.filter(id=request.user.id).exists():
+            liked_ids.add(comment.id)
+        liked_reply_ids = set(
+            request.user.liked_replies.filter(comment=comment).values_list("id", flat=True)
+        )
+    return render(
+        request,
+        "core/thread.html",
+        {
+            "comment": comment,
+            "replies": replies,
+            "form": form,
+            "liked_ids": liked_ids,
+            "liked_reply_ids": liked_reply_ids,
+        },
+    )
+
+
+@login_required
+def edit_reply(request, reply_id):
+    reply = get_object_or_404(
+        Reply.objects.select_related("comment__country"),
+        id=reply_id,
+        user=request.user,
+    )
+    if request.method == "POST":
+        form = ReplyForm(request.POST, instance=reply)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your reply was updated.")
+            return redirect("comment_thread", comment_id=reply.comment_id)
+    else:
+        form = ReplyForm(instance=reply)
+    return render(request, "core/edit_reply.html", {"form": form, "reply": reply})
+
+
+def delete_reply(request, reply_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+
+    if request.user.is_staff:
+        reply = get_object_or_404(Reply, id=reply_id)
+    else:
+        reply = get_object_or_404(Reply, id=reply_id, user=request.user)
+    comment_id = reply.comment_id
+    reply.delete()
+    messages.success(request, "The reply was deleted.")
+    return redirect(_next_url(request) or f"/comments/{comment_id}/")
+
+
+def toggle_reply_like(request, reply_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+
+    reply = get_object_or_404(Reply, id=reply_id)
+    if reply.user_id != request.user.id:
+        if reply.likes.filter(id=request.user.id).exists():
+            reply.likes.remove(request.user)
+        else:
+            reply.likes.add(request.user)
+    return redirect(_next_url(request) or f"/comments/{reply.comment_id}/")
 
 
 def _next_url(request):

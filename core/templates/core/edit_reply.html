@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Edit reply · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap breadcrumb">
+  <a href="{% url 'home' %}">Countries</a> <span aria-hidden="true">›</span>
+  <a href="{% url 'comment_thread' reply.comment_id %}">Thread</a>
+  <span aria-hidden="true">›</span> Edit reply
+</div>
+
+<div class="wrap section" style="max-width:760px;padding-top:1.4rem">
+  <section class="card compose card-pad">
+    <h2 style="margin-bottom:1rem">Edit your reply</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+        {{ form.text }}
+        {{ form.text.errors }}
+        <div class="counter" data-counter>0 / 1000</div>
+      </div>
+      <div class="compose-foot">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+        <a class="btn btn-ghost" href="{% url 'comment_thread' reply.comment_id %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

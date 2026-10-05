@@ -25,6 +25,7 @@
         <div class="stat"><b>{{ totals.experiences }}</b><span>experiences shared</span></div>
         <div class="stat"><b>{{ totals.countries }}</b><span>countr{{ totals.countries|pluralize:"y,ies" }} covered</span></div>
         <div class="stat"><b>{{ totals.questions }}</b><span>questions asked</span></div>
+        <div class="stat"><b>{% if totals.answered_percent is not None %}{{ totals.answered_percent }}%{% else %}—{% endif %}</b><span>of questions get answers</span></div>
       </div>
     </div>
     <div class="hero-buddy">

@@ -11,6 +11,7 @@
     <p style="margin:.15rem 0 .35rem"><a href="{% url 'accounts:settings' %}">Account settings</a></p>
     <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
       <span class="level">{{ level }}</span>
+      {% if is_community_helper %}<span class="level">🏆 Community Helper</span>{% endif %}
       <span class="level-progress">
         {{ contributions }} contribution{{ contributions|pluralize }}{% if progress %} · {{ progress.remaining }} more to {{ progress.label }}
         <span class="meter" style="margin-top:.35rem"><i style="width:{{ progress.percent }}%"></i></span>{% endif %}
@@ -40,16 +41,20 @@
 {% endif %}
 
 <div class="wrap section" style="padding-top:0">
-  {% if comments %}
+  {% if comments or replies %}
     <div class="tabs" data-tabs role="tablist">
-      <button data-filter="all" aria-selected="true">All activity</button>
-      <button data-filter="experience" aria-selected="false">Experiences</button>
-      <button data-filter="question" aria-selected="false">Questions</button>
+      <button type="button" data-filter="all" aria-selected="true">All activity</button>
+      <button type="button" data-filter="experience" aria-selected="false">Experiences</button>
+      <button type="button" data-filter="question" aria-selected="false">Questions</button>
+      <button type="button" data-filter="reply" aria-selected="false">Replies</button>
     </div>
 
     <div class="timeline">
       {% for c in comments %}
         {% include "partials/comment_card.html" with c=c on_profile=True %}
+      {% endfor %}
+      {% for reply in replies %}
+        {% include "partials/reply_card.html" with reply=reply on_profile=True %}
       {% endfor %}
     </div>
   {% else %}
@@ -61,6 +66,6 @@
     </div>
   {% endif %}
 
-  <div style="margin-top:2rem"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Traveler levels grow with your participation — questions count too.</div></div></div>
+  <div style="margin-top:2rem"><div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Posts and replies both raise your traveler level. Answer 10 questions to earn the Community Helper badge.</div></div></div>
 </div>
 {% endblock %}

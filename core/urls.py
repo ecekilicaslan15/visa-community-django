@@ -6,6 +6,12 @@ urlpatterns = [
     path("insights/", views.insights, name="insights"),
     path("design-system/", views.design_system, name="design_system"),
     path("countries/<slug:slug>/", views.country_detail, name="country_detail"),
+    path("comments/<int:comment_id>/", views.comment_thread, name="comment_thread"),
+    path(
+        "comments/<int:comment_id>/reply/",
+        views.create_reply,
+        name="create_reply",
+    ),
     path(
         "comments/<int:comment_id>/delete/",
         views.delete_comment,
@@ -24,5 +30,8 @@ urlpatterns = [
         views.toggle_like,
         name="toggle_like",
     ),
+    path("replies/<int:reply_id>/edit/", views.edit_reply, name="edit_reply"),
+    path("replies/<int:reply_id>/delete/", views.delete_reply, name="delete_reply"),
+    path("replies/<int:reply_id>/like/", views.toggle_reply_like, name="toggle_reply_like"),
 
 ]
