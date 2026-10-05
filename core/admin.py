@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Comment, Country, OpeningReport, Reply
+from .models import (
+    Comment,
+    ConsulateVisaStat,
+    Country,
+    CountryVisaStat,
+    OpeningReport,
+    Reply,
+    StatsDataset,
+)
 
 
 @admin.register(Country)
@@ -52,3 +60,22 @@ class OpeningReportAdmin(admin.ModelAdmin):
     ordering = ("-opened_on", "-created_at")
     list_select_related = ("country", "user")
     raw_id_fields = ("country", "user")
+
+
+@admin.register(StatsDataset)
+class StatsDatasetAdmin(admin.ModelAdmin):
+    list_display = ("year", "title", "source_name", "published_on")
+
+
+@admin.register(CountryVisaStat)
+class CountryVisaStatAdmin(admin.ModelAdmin):
+    list_display = ("country_name", "country_code", "applications", "issued", "refused", "dataset")
+    list_filter = ("dataset",)
+    search_fields = ("country_name", "country_code")
+
+
+@admin.register(ConsulateVisaStat)
+class ConsulateVisaStatAdmin(admin.ModelAdmin):
+    list_display = ("country_name", "city", "applications", "refusal_rate", "dataset")
+    list_filter = ("dataset", "city")
+    search_fields = ("country_name", "city")

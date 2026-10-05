@@ -3,9 +3,35 @@ from django.utils.text import slugify
 
 from core.models import Country
 
+# Every Schengen country in the 2025 Türkiye statistics, with its sticker code.
 SCHENGEN = [
-    ("France", "FR"), ("Germany", "DE"), ("Netherlands", "NL"), ("Spain", "ES"),
-    ("Italy", "IT"), ("Portugal", "PT"), ("Greece", "GR"), ("Czechia", "CZ"),
+    ("Greece", "GR"),
+    ("Germany", "DE"),
+    ("France", "FR"),
+    ("Netherlands", "NL"),
+    ("Bulgaria", "BG"),
+    ("Italy", "IT"),
+    ("Spain", "ES"),
+    ("Denmark", "DK"),
+    ("Hungary", "HU"),
+    ("Romania", "RO"),
+    ("Czechia", "CZ"),
+    ("Switzerland", "CH"),
+    ("Sweden", "SE"),
+    ("Norway", "NO"),
+    ("Austria", "AT"),
+    ("Belgium", "BE"),
+    ("Malta", "MT"),
+    ("Poland", "PL"),
+    ("Slovenia", "SI"),
+    ("Finland", "FI"),
+    ("Portugal", "PT"),
+    ("Croatia", "HR"),
+    ("Luxembourg", "LU"),
+    ("Lithuania", "LT"),
+    ("Slovakia", "SK"),
+    ("Estonia", "EE"),
+    ("Latvia", "LV"),
 ]
 DESCRIPTION = "Schengen Area · short-stay (Type C) visa experiences"
 
@@ -22,8 +48,8 @@ class Command(BaseCommand):
             )
             if was_created:
                 created += 1
-            elif not country.code:
-                # Existing country from before the redesign: just fill in its code.
+            elif country.code != code:
+                # Keep the existing row, and fill in the Schengen code.
                 country.code = code
                 country.save(update_fields=["code"])
                 updated += 1

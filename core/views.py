@@ -12,6 +12,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import CommentForm, OpeningReportForm, ReplyForm
 from .models import Comment, Country, Reply
 from .predictions import predict_next_window
+from .visa_stats import official_snapshot
 
 EXPERIENCE = Comment.KIND_EXPERIENCE
 APPROVED = Comment.OUTCOME_APPROVED
@@ -230,6 +231,7 @@ def _render_country(request, country, comment_form, opening_form=None):
             "opening_count": len(opened_on),
             "last_opening": opened_on[0] if opened_on else None,
             "prediction": predict_next_window(opened_on),
+            "official": official_snapshot(country),
         },
     )
 

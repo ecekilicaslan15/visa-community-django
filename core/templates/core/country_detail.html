@@ -152,7 +152,7 @@
       </div>
     </section>
 
-    <section class="card card-pad" aria-label="Report an opening">
+    <section class="card card-pad" id="report-opening" aria-label="Report an opening">
       <h3>Report an opening</h3>
       {% if user.is_authenticated %}
         <form method="post" action="{% url 'report_opening' country.slug %}" novalidate>
@@ -182,6 +182,22 @@
       <div class="card mini-stat"><b>{% if stats.avg_wait is not None %}{{ stats.avg_wait }}d{% else %}—{% endif %}</b><span>avg. wait</span></div>
       <div class="card mini-stat"><b>{{ stats.experiences }}</b><span>experiences</span></div>
     </div>
+
+    {% if official %}
+    <section class="card card-pad" aria-label="Official 2025 data">
+      <div class="pass-label">Official {{ official.year }} data</div>
+      <h3>{{ official.rate_label }}% refusal rate</h3>
+      <p class="muted small">{{ official.applications_label }} applications lodged in Türkiye.</p>
+      {% if official.consulates %}
+        <ul class="consulate-list">
+          {% for row in official.consulates %}
+            <li><b>{{ row.city }}</b> <span>{{ row.rate_label }}%</span> <span class="num">{{ row.applications_label }}</span></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <p class="stat-source" style="margin-bottom:0">Official EU statistics — not a prediction for your application. <a href="{% url 'stats_refusals' %}">All 2025 rates</a></p>
+    </section>
+    {% endif %}
 
     <div class="tip"><span class="bulb">💡</span><div><b>Tip</b> — Questions are welcome too. You don't have to finish your visa process to participate.</div></div>
   </aside>

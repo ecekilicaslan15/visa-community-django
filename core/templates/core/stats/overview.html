@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics 2025 · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 0">
+  <div class="eyebrow">Statistics</div>
+  <h1 style="font-size:2.3rem">Schengen visas from Türkiye, 2025</h1>
+  <p class="lead muted" style="max-width:40rem">Official short-stay figures for applications lodged in Türkiye, next to what travelers here have shared.</p>
+</header>
+
+<div class="wrap">
+  {% include "partials/stats_nav.html" %}
+
+  {% if dataset and totals %}
+    <p class="muted" style="margin-top:0">Applications lodged in Türkiye, short-stay (type C) visas.</p>
+    <div class="stat-grid">
+      <div class="card mini-stat"><b>{{ totals.applications_label }}</b><span>applications</span></div>
+      <div class="card mini-stat"><b>{{ totals.issued_label }}</b><span>visas issued</span></div>
+      <div class="card mini-stat"><b>{{ totals.refused_label }}</b><span>refused</span></div>
+      <div class="card mini-stat"><b>{{ totals.refusal_rate }}%</b><span>refusal rate</span></div>
+      <div class="card mini-stat"><b>2nd</b><span>largest applicant country</span></div>
+    </div>
+    <p class="muted small">Türkiye is the 2nd-largest applicant country worldwide, after China.</p>
+
+    <section class="card card-pad" style="margin-top:1.4rem">
+      <h2 style="font-size:1.25rem">Across the EU</h2>
+      <p>The same Commission release puts the EU-wide picture at about 12 million applications and more than 10 million visas issued. The EU-wide refusal rate was 14.6%, and 51.7% of issued visas were multiple-entry.</p>
+      <p class="muted small" style="margin-bottom:0">Those EU-wide figures describe every country of application, not only Türkiye.</p>
+    </section>
+
+    {% include "partials/stat_source.html" %}
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=110 h=116 pose="suitcase" %}
+      <h3>2025 official figures are not on this page yet</h3>
+      <p>Refusal rates, the cascade rule, and community appointment reports will show here once the statistics are loaded.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

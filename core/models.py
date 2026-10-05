@@ -167,3 +167,75 @@ class OpeningReport(models.Model):
         problem = opening_date_problem(self.opened_on)
         if problem:
             raise ValidationError({"opened_on": problem})
+
+
+class StatsDataset(models.Model):
+    """One published release of official Schengen visa statistics."""
+
+    year = models.PositiveSmallIntegerField(unique=True)
+    title = models.CharField(max_length=200)
+    source_name = models.CharField(max_length=200)
+    source_url = models.URLField()
+    published_on = models.DateField()
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-year"]
+
+    def __str__(self):
+        return f"{self.title} ({self.year})"
+
+
+class CountryVisaStat(models.Model):
+    """Applications lodged in Türkiye for one Schengen country."""
+
+    dataset = models.ForeignKey(
+        StatsDataset,
+        related_name="country_stats",
+        on_delete=models.CASCADE,
+    )
+    country_code = models.CharField(max_length=3)
+    country_name = models.CharField(max_length=100)
+    applications = models.PositiveIntegerField()
+    issued = models.PositiveIntegerField()
+    multiple_entry = models.PositiveIntegerField()
+    refused = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["country_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["dataset", "country_code"],
+                name="unique_country_stat_per_dataset",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.country_name} {self.dataset.year}"
+
+
+class ConsulateVisaStat(models.Model):
+    """Published refusal rate for one consulate in Türkiye."""
+
+    dataset = models.ForeignKey(
+        StatsDataset,
+        related_name="consulate_stats",
+        on_delete=models.CASCADE,
+    )
+    country_code = models.CharField(max_length=3)
+    country_name = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    applications = models.PositiveIntegerField()
+    refusal_rate = models.DecimalField(max_digits=4, decimal_places=1)
+
+    class Meta:
+        ordering = ["-refusal_rate", "country_name", "city"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["dataset", "country_code", "city"],
+                name="unique_consulate_stat_per_dataset",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.country_name} {self.city} {self.refusal_rate}%"

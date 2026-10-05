@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Easiest appointments · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 0">
+  <div class="eyebrow">Statistics</div>
+  <h1 style="font-size:2.3rem">Easiest appointments</h1>
+  <p class="lead muted" style="max-width:42rem">There is no official data on appointment availability. Everything in the chart below is community data from opening reports and shared waiting times.</p>
+</header>
+
+<div class="wrap section" style="padding-top:0">
+  {% include "partials/stats_nav.html" %}
+
+  <p class="stat-source">
+    Community data{% if board.first_on and board.last_on %} · openings reported from {{ board.first_on|date:"j M Y" }} to {{ board.last_on|date:"j M Y" }}{% endif %}.
+    A shorter bar means a shorter gap between reported openings.
+  </p>
+
+  {% if board.chart %}
+    <div class="card card-pad">
+      {% for row in board.chart %}
+        <div class="hbar">
+          <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+            <span class="sticker sm s-teal">{{ row.code }}</span>
+            <span><b>{{ row.name }}</b><span>{{ row.reports }} opening{{ row.reports|pluralize }}</span></span>
+          </a>
+          <div class="hbar-track" role="img" aria-label="{{ row.name }} a slot opens about every {{ row.gap_days }} days">
+            <i class="hbar-fill is-teal" style="width:{{ row.bar_width }}%"></i>
+          </div>
+          <span class="hbar-rate">{{ row.gap_days }}d</span>
+          <span class="hbar-apps">{% if row.wait_days is not None %}passport {{ row.wait_days }}d{% else %}no wait reported{% endif %}</span>
+        </div>
+        <p class="hbar-note">A slot opens about every {{ row.gap_days }} days.{% if row.wait_days is not None %} Median wait from appointment to passport: {{ row.wait_days }} days.{% endif %}</p>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=110 h=116 pose="coffee" %}
+      <h3>Still waiting for enough appointment data.</h3>
+      <p>A country needs at least 3 reported openings before a gap can be shown.</p>
+    </div>
+  {% endif %}
+
+  {% if board.waiting %}
+    <h2 style="margin-top:2rem">Not enough reports yet</h2>
+    <div class="card card-pad">
+      <ul class="waiting-list">
+        {% for row in board.waiting %}
+          <li>
+            <a href="{% url 'country_detail' row.slug %}">{{ row.name }}</a>
+            <span>{% if row.reports < 3 %}Not enough reports yet · {{ row.reports }} of 3{% else %}Not enough distinct opening dates yet{% endif %}</span>
+            <a href="{% url 'country_detail' row.slug %}#report-opening">Report an opening</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <h2 style="margin-top:2.2rem">Lowest official refusal rates 2025</h2>
+  <p class="muted">These are refusal rates, not appointment availability.</p>
+  {% if lowest %}
+    <div class="card card-pad">
+      {% for row in lowest %}
+        <div class="hbar">
+          {% if row.slug %}
+            <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+              <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+              <span><b>{{ row.name }}</b></span>
+            </a>
+          {% else %}
+            <div class="country-cell">
+              <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+              <span><b>{{ row.name }}</b></span>
+            </div>
+          {% endif %}
+          <div class="hbar-track" role="img" aria-label="{{ row.name }} official refusal rate {{ row.rate_label }} percent">
+            <i class="hbar-fill is-{{ row.band }}" style="width:{{ row.bar_width }}%"></i>
+          </div>
+          <span class="hbar-rate">{{ row.rate_label }}%</span>
+          <span class="hbar-apps">{{ row.applications_label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    {% include "partials/stat_source.html" %}
+  {% else %}
+    <p class="muted">Official 2025 refusal rates are not loaded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

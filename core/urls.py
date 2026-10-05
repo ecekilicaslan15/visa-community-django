@@ -1,9 +1,13 @@
 from django.urls import path
-from . import views
+from . import stats_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("insights/", views.insights, name="insights"),
+    path("stats/", stats_views.stats_overview, name="stats_overview"),
+    path("stats/refusals/", stats_views.stats_refusals, name="stats_refusals"),
+    path("stats/cascade/", stats_views.stats_cascade, name="stats_cascade"),
+    path("stats/appointments/", stats_views.stats_appointments, name="stats_appointments"),
     path("design-system/", views.design_system, name="design_system"),
     path("countries/<slug:slug>/", views.country_detail, name="country_detail"),
     path(

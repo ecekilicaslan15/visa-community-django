@@ -1,0 +1,9 @@
+{% with url_name=request.resolver_match.url_name %}
+<nav class="tabs" aria-label="Statistics">
+  <a href="{% url 'stats_overview' %}" {% if url_name == 'stats_overview' %}aria-selected="true"{% endif %}>Overview</a>
+  <a href="{% url 'stats_refusals' %}" {% if url_name == 'stats_refusals' %}aria-selected="true"{% endif %}>Refusal rates</a>
+  <a href="{% url 'stats_cascade' %}" {% if url_name == 'stats_cascade' %}aria-selected="true"{% endif %}>Cascade rule</a>
+  <a href="{% url 'stats_appointments' %}" {% if url_name == 'stats_appointments' %}aria-selected="true"{% endif %}>Easiest appointments</a>
+  <a href="{% url 'insights' %}" {% if url_name == 'insights' %}aria-selected="true"{% endif %}>Community insights</a>
+</nav>
+{% endwith %}

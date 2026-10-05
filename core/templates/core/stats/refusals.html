@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Refusal rates 2025 · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 0">
+  <div class="eyebrow">Statistics</div>
+  <h1 style="font-size:2.3rem">Refusal rates</h1>
+  <p class="lead muted" style="max-width:42rem">Refused applications divided by issued plus refused — the Commission's formula — for short-stay visas lodged in Türkiye in 2025.</p>
+</header>
+
+<div class="wrap section" style="padding-top:0">
+  {% include "partials/stats_nav.html" %}
+
+  {% if dataset %}
+    <h2>By Schengen country</h2>
+    <nav class="filter-row" aria-label="Sort countries">
+      <a href="?sort=rate{% if city %}&amp;city={{ city|urlencode }}{% endif %}" {% if sort != 'applications' %}aria-selected="true"{% endif %}>By refusal rate</a>
+      <a href="?sort=applications{% if city %}&amp;city={{ city|urlencode }}{% endif %}" {% if sort == 'applications' %}aria-selected="true"{% endif %}>By number of applications</a>
+    </nav>
+    <div class="legend" style="margin-bottom:1rem">
+      <span><span class="chip chip-reject">20% and above</span></span>
+      <span><span class="chip chip-amber">10–20%</span></span>
+      <span><span class="chip chip-approve">Below 10%</span></span>
+    </div>
+    <div class="card card-pad">
+      {% for row in country_rows %}
+        <div class="hbar">
+          {% if row.slug %}
+            <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+              <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+              <span><b>{{ row.name }}</b></span>
+            </a>
+          {% else %}
+            <div class="country-cell">
+              <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+              <span><b>{{ row.name }}</b></span>
+            </div>
+          {% endif %}
+          <div class="hbar-track" role="img" aria-label="{{ row.name }} refusal rate {{ row.rate_label }} percent, {{ row.applications_label }} applications">
+            <i class="hbar-fill is-{{ row.band }}" style="width:{{ row.bar_width }}%"></i>
+          </div>
+          <span class="hbar-rate">{{ row.rate_label }}%</span>
+          <span class="hbar-apps">{{ row.applications_label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <h2 style="margin-top:2.2rem">By consulate</h2>
+    <nav class="filter-row" aria-label="Filter by city">
+      <a href="?sort={{ sort }}" {% if not city %}aria-selected="true"{% endif %}>All</a>
+      {% for name in cities %}
+        <a href="?sort={{ sort }}&amp;city={{ name|urlencode }}" {% if city == name %}aria-selected="true"{% endif %}>{{ name }}</a>
+      {% endfor %}
+    </nav>
+
+    <h3>Highest refusal rates</h3>
+    {% if highest %}
+      <div class="card card-pad">
+        {% for row in highest %}
+          <div class="hbar">
+            {% if row.slug %}
+              <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+                <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                <span><b>{{ row.name }}</b><span>{{ row.city }}</span></span>
+              </a>
+            {% else %}
+              <div class="country-cell">
+                <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                <span><b>{{ row.name }}</b><span>{{ row.city }}</span></span>
+              </div>
+            {% endif %}
+            <div class="hbar-track" role="img" aria-label="{{ row.name }} {{ row.city }} refusal rate {{ row.rate_label }} percent, {{ row.applications_label }} applications">
+              <i class="hbar-fill is-{{ row.band }}" style="width:{{ row.bar_width }}%"></i>
+            </div>
+            <span class="hbar-rate">{{ row.rate_label }}%</span>
+            <span class="hbar-apps">{{ row.applications_label }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">No consulates match this city.</p>
+    {% endif %}
+
+    {% if lowest %}
+      <h3 style="margin-top:1.6rem">Lowest refusal rates</h3>
+      <div class="card card-pad">
+        {% for row in lowest %}
+          <div class="hbar">
+            {% if row.slug %}
+              <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+                <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                <span><b>{{ row.name }}</b><span>{{ row.city }}</span></span>
+              </a>
+            {% else %}
+              <div class="country-cell">
+                <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                <span><b>{{ row.name }}</b><span>{{ row.city }}</span></span>
+              </div>
+            {% endif %}
+            <div class="hbar-track" role="img" aria-label="{{ row.name }} {{ row.city }} refusal rate {{ row.rate_label }} percent, {{ row.applications_label }} applications">
+              <i class="hbar-fill is-{{ row.band }}" style="width:{{ row.bar_width }}%"></i>
+            </div>
+            <span class="hbar-rate">{{ row.rate_label }}%</span>
+            <span class="hbar-apps">{{ row.applications_label }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if gap_sentence %}
+      <div class="tip" style="margin-top:1.4rem"><span class="bulb">💡</span><div><b>Tip</b> — {{ gap_sentence }}</div></div>
+    {% endif %}
+
+    {% include "partials/stat_source.html" %}
+  {% else %}
+    <div class="empty">
+      {% include "partials/buddy.html" with w=110 h=116 pose="suitcase" %}
+      <h3>2025 official figures are not on this page yet</h3>
+      <p>Country and consulate refusal rates will show here once the statistics are loaded.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

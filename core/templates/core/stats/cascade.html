@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Cascade rule · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 0">
+  <div class="eyebrow">Statistics</div>
+  <h1 style="font-size:2.3rem">The cascade rule</h1>
+  <p class="lead muted" style="max-width:42rem">How a lawfully used short-stay visa can lead to a longer multiple-entry visa for Turkish nationals applying in Türkiye.</p>
+</header>
+
+<div class="wrap section" style="padding-top:0">
+  {% include "partials/stats_nav.html" %}
+
+  <section class="card card-pad">
+    <p>Commission Implementing Decision C(2025) 4694 of 15 July 2025 applies from that date. It covers Turkish nationals who live in Türkiye and apply in Türkiye for a short-stay visa. It does not cover truck drivers applying in their professional capacity.</p>
+    <p>Each step asks for a lawfully used previous visa — no overstay or misuse — and an application inside a set time after that visa expires. The visa can never run longer than the passport: if the passport ends sooner, the visa stops three months before the passport does.</p>
+    <p style="margin-bottom:1.2rem">Consulates keep their discretion. They can still refuse, shorten the visa in an individual case, or issue a long visa when the case justifies it. It is not automatic.</p>
+
+    <div class="cascade-ladder" aria-label="Cascade ladder from 6 months to 5 years">
+      <div class="cascade-step">
+        <div class="stamp">6 months</div>
+        <div class="pass-label">Within 1 year of a lawfully used previous visa</div>
+      </div>
+      <div class="cascade-arrow" aria-hidden="true">→</div>
+      <div class="cascade-step">
+        <div class="stamp">1 year</div>
+        <div class="pass-label">Within 2 years of a lawfully used 6-month visa</div>
+      </div>
+      <div class="cascade-arrow" aria-hidden="true">→</div>
+      <div class="cascade-step">
+        <div class="stamp">3 years</div>
+        <div class="pass-label">Within 2 years of a lawfully used 1-year visa</div>
+      </div>
+      <div class="cascade-arrow" aria-hidden="true">→</div>
+      <div class="cascade-step">
+        <div class="stamp">5 years</div>
+        <div class="pass-label">Within 2 years of a lawfully used 3-year visa</div>
+      </div>
+    </div>
+    <p class="stat-source" style="margin-bottom:0">
+      <a href="https://home-affairs.ec.europa.eu/document/download/7a34579c-120f-4801-b6cb-77a8603c4f9a_en">Commission Implementing Decision C(2025) 4694</a>
+      of 15 July 2025. {{ guarantee }}
+    </p>
+  </section>
+
+  <section class="card card-pad" style="margin-top:1.2rem" aria-label="Cascade eligibility helper">
+    <h2 style="font-size:1.25rem">Which step may be next?</h2>
+    <p class="muted">Nothing you type here is saved. This only reads the rules above.</p>
+    <form method="get" action="{% url 'stats_cascade' %}">
+      <div class="field">
+        <label for="previous">Validity of your last visa</label>
+        <select class="input" id="previous" name="previous">
+          <option value="none" {% if previous == 'none' %}selected{% endif %}>None</option>
+          <option value="single" {% if previous == 'single' %}selected{% endif %}>Single-entry</option>
+          <option value="6m" {% if previous == '6m' %}selected{% endif %}>6 months</option>
+          <option value="1y" {% if previous == '1y' %}selected{% endif %}>1 year</option>
+          <option value="3y" {% if previous == '3y' %}selected{% endif %}>3 years</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="expired_on">Expiry date of that visa</label>
+        <input class="input" id="expired_on" name="expired_on" type="date" value="{{ expired_on }}">
+      </div>
+      <fieldset class="field">
+        <legend>Did you use it lawfully?</legend>
+        <label><input type="radio" name="lawful" value="yes" {% if lawful == 'yes' %}checked{% endif %}> Yes, no overstay or misuse</label>
+        <label><input type="radio" name="lawful" value="no" {% if lawful == 'no' %}checked{% endif %}> No</label>
+      </fieldset>
+      <button class="btn btn-primary btn-sm" type="submit">Check eligibility</button>
+    </form>
+
+    {% if result %}
+      <div class="tip" style="margin-top:1rem"><span class="bulb">💡</span><div>
+        <b>{% if result.eligible %}{{ result.step }}{% else %}Not this time{% endif %}</b>
+        — {{ result.reason }} {{ guarantee }}
+      </div></div>
+    {% endif %}
+  </section>
+
+  <h2 style="margin-top:2.2rem">Who gives long visas?</h2>
+  <p class="muted" style="max-width:42rem">The official statistics do not count cascade visas separately. The multiple-entry share of issued visas is the best available indicator of how generously a country issues long, multi-entry visas. The cascade only started on 15 July 2025, so the 2025 figures reflect it only partly.</p>
+
+  {% if dataset %}
+    <div class="card table-scroll">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Multiple-entry share</th>
+            <th>Issued visas</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in share_rows %}
+            <tr>
+              <td>
+                {% if row.slug %}
+                  <a class="country-cell" href="{% url 'country_detail' row.slug %}">
+                    <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                    <span><b>{{ row.name }}</b></span>
+                  </a>
+                {% else %}
+                  <div class="country-cell">
+                    <span class="sticker sm {{ row.sticker_class }}">{{ row.code }}</span>
+                    <span><b>{{ row.name }}</b></span>
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <div class="rate"><b>{{ row.share_label }}%</b><span class="meter" role="img" aria-label="{{ row.name }} multiple-entry share {{ row.share_label }} percent"><i style="width:{{ row.share_width }}%"></i></span></div>
+              </td>
+              <td class="num">{{ row.multiple_entry_label }} of {{ row.issued_label }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/stat_source.html" %}
+  {% endif %}
+</div>
+{% endblock %}
