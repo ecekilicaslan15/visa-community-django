@@ -4,6 +4,10 @@ A Django site where people from Türkiye share Schengen visa experiences and que
 
 Official charts use the European Commission’s 2025 short-stay figures. Community charts are counted from posts on this site. Neither one is a prediction for a single application.
 
+## Why I built this
+
+I built VisaCommunity while applying for an Erasmus student visa. Official pages listed the documents, but they did not explain what consulates actually check, how people prepare a motivation letter, or how long appointments take. The practical answers were scattered across social media groups. I wanted those experiences in one place, organized by country, instead of lost in a chat.
+
 ## Features
 
 - Sign up with email, confirm the address before posting, sign in with a username or email, reset a password, edit a profile, and delete an account
