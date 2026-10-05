@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <div class="empty">
+    {% include "partials/buddy.html" with w=140 h=148 pose="suitcase" %}
+    <h1>We can't find that page</h1>
+    <p>The address may be mistyped, or the page may have been removed.</p>
+    <a class="btn btn-primary" href="{% url 'home' %}#countries">Back to countries</a>
+  </div>
+</div>
+{% endblock %}

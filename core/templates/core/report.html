@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap section" style="max-width:640px">
+  <div class="eyebrow">Moderation</div>
+  <h1 style="font-size:2rem">{{ heading }}</h1>
+  <p class="muted">Reports are reviewed by the community staff. One report per person is enough.</p>
+
+  <article class="card card-pad">
+    <p class="comment-body">{{ excerpt|linebreaksbr }}</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <fieldset class="field report-reasons">
+        <legend>Why are you reporting this?</legend>
+        {% for radio in form.reason %}
+          <label for="{{ radio.id_for_label }}">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+        {{ form.reason.errors }}
+      </fieldset>
+      <button class="btn btn-primary" type="submit">Send report</button>
+    </form>
+  </article>
+</div>
+{% endblock %}

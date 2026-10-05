@@ -20,10 +20,10 @@
 
     <div class="comment-foot">
       {% if user.is_authenticated and reply.user_id != user.id %}
-        <form method="post" action="{% url 'toggle_reply_like' reply.id %}" class="inline-form">
+        <form method="post" action="{% url 'toggle_reply_like' reply.id %}" class="inline-form js-like">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path }}#r{{ reply.id }}">
-          <button class="link-btn{% if reply.id in liked_reply_ids %} liked{% endif %}">Helpful · {{ reply.like_count }}</button>
+          <button type="submit" class="link-btn{% if reply.id in liked_reply_ids %} liked{% endif %}" aria-pressed="{% if reply.id in liked_reply_ids %}true{% else %}false{% endif %}">Helpful · {{ reply.like_count }}</button>
         </form>
       {% else %}
         <span>Helpful · {{ reply.like_count }}</span>
@@ -33,14 +33,28 @@
         <a href="{% url 'comment_thread' reply.comment_id %}#r{{ reply.id }}">View thread →</a>
       {% endif %}
 
+      {% if user.is_authenticated and reply.user_id != user.id %}
+        {% if reply.id in reported_reply_ids %}
+          <span>Reported</span>
+        {% else %}
+          <a href="{% url 'report_reply' reply.id %}?next={{ request.get_full_path|urlencode }}">Report</a>
+        {% endif %}
+      {% endif %}
+
       {% if reply.user_id == user.id %}
         <a href="{% url 'edit_reply' reply.id %}">Edit</a>
       {% endif %}
-      {% if reply.user_id == user.id or user.is_staff %}
+      {% if user.is_staff %}
+        <form method="post" action="{% url 'delete_reply' reply.id %}" class="inline-form" onsubmit="return confirm('Remove this reply?');">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="link-btn danger">Remove</button>
+        </form>
+      {% elif reply.user_id == user.id %}
         <form method="post" action="{% url 'delete_reply' reply.id %}" class="inline-form" onsubmit="return confirm('Delete this reply?');">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button class="link-btn danger">Delete</button>
+          <button type="submit" class="link-btn danger">Delete</button>
         </form>
       {% endif %}
     </div>

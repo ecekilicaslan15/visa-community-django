@@ -239,3 +239,74 @@ class ConsulateVisaStat(models.Model):
 
     def __str__(self):
         return f"{self.country_name} {self.city} {self.refusal_rate}%"
+
+
+class ContentReport(models.Model):
+    """A member flagging someone else's comment or reply for review."""
+
+    REASON_SPAM = "spam"
+    REASON_OFFENSIVE = "offensive"
+    REASON_PERSONAL = "personal"
+    REASON_OTHER = "other"
+    REASON_CHOICES = [
+        (REASON_SPAM, "Spam"),
+        (REASON_OFFENSIVE, "Offensive"),
+        (REASON_PERSONAL, "Personal data"),
+        (REASON_OTHER, "Other"),
+    ]
+
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="content_reports",
+        on_delete=models.CASCADE,
+    )
+    comment = models.ForeignKey(
+        Comment,
+        related_name="reports",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    reply = models.ForeignKey(
+        Reply,
+        related_name="reports",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(comment__isnull=False, reply__isnull=True)
+                    | models.Q(comment__isnull=True, reply__isnull=False)
+                ),
+                name="report_targets_one_item",
+            ),
+            models.UniqueConstraint(
+                fields=["reporter", "comment"],
+                condition=models.Q(comment__isnull=False),
+                name="unique_report_per_user_comment",
+            ),
+            models.UniqueConstraint(
+                fields=["reporter", "reply"],
+                condition=models.Q(reply__isnull=False),
+                name="unique_report_per_user_reply",
+            ),
+        ]
+
+    def __str__(self):
+        target = self.comment_id or self.reply_id
+        return f"{self.reporter} reported {target} ({self.reason})"
+
+    def clean(self):
+        super().clean()
+        if bool(self.comment_id) == bool(self.reply_id):
+            raise ValidationError(
+                "A report must point at a comment or a reply, not both."
+            )

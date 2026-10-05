@@ -51,14 +51,14 @@
         </div>
 
         <div data-experience-fields hidden>
-          <div class="field">
-            <label>Visa outcome</label>
+          <fieldset class="field">
+            <legend>Visa outcome</legend>
             <div class="outcome">
               <input type="radio" name="outcome" value="approved" id="o-a" {% if form.outcome.value == 'approved' %}checked{% endif %}><label class="ok" for="o-a">Approved</label>
               <input type="radio" name="outcome" value="rejected" id="o-r" {% if form.outcome.value == 'rejected' %}checked{% endif %}><label class="no" for="o-r">Rejected</label>
             </div>
             {{ form.outcome.errors }}
-          </div>
+          </fieldset>
           <div class="field-row">
             <div class="field">
               <label for="{{ form.appointment_city.id_for_label }}">Appointment city</label>

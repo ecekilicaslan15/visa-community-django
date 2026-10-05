@@ -1,5 +1,5 @@
 from django.urls import path
-from . import guide_views, stats_views, views
+from . import guide_views, page_views, stats_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -12,6 +12,9 @@ urlpatterns = [
     path("guides/motivation-letter/", guide_views.motivation_letter, name="motivation_letter"),
     path("guides/sponsorship-letter/", guide_views.sponsorship_letter, name="sponsorship_letter"),
     path("design-system/", views.design_system, name="design_system"),
+    path("guidelines/", page_views.guidelines, name="guidelines"),
+    path("privacy/", page_views.privacy, name="privacy"),
+    path("contact/", page_views.contact, name="contact"),
     path("countries/<slug:slug>/", views.country_detail, name="country_detail"),
     path(
         "countries/<slug:slug>/openings/",
@@ -30,6 +33,11 @@ urlpatterns = [
         name="delete_comment",
     ),
     path(
+        "comments/<int:comment_id>/report/",
+        views.report_comment,
+        name="report_comment",
+    ),
+    path(
         "comments/<int:comment_id>/edit/",
         views.edit_comment,
         name="edit_comment",
@@ -43,6 +51,7 @@ urlpatterns = [
         name="toggle_like",
     ),
     path("replies/<int:reply_id>/edit/", views.edit_reply, name="edit_reply"),
+    path("replies/<int:reply_id>/report/", views.report_reply, name="report_reply"),
     path("replies/<int:reply_id>/delete/", views.delete_reply, name="delete_reply"),
     path("replies/<int:reply_id>/like/", views.toggle_reply_like, name="toggle_reply_like"),
 

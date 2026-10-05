@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Comment, OpeningReport, Reply, opening_date_problem
+from .models import Comment, ContentReport, OpeningReport, Reply, opening_date_problem
 
 
 class CommentForm(forms.ModelForm):
@@ -128,3 +128,13 @@ class OpeningReportForm(forms.ModelForm):
                 "You already reported this opening date for this country.",
             )
         return cleaned
+
+
+class ContentReportForm(forms.Form):
+    """Reason only. The view sets the reporter and the comment or reply."""
+
+    reason = forms.ChoiceField(
+        choices=ContentReport.REASON_CHOICES,
+        widget=forms.RadioSelect,
+        error_messages={"required": "Choose a reason."},
+    )

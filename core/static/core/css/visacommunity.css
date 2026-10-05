@@ -664,3 +664,10 @@ fieldset.field label{ display:block; margin:.25rem 0; font-weight:500; }
   body.printing-letter .letter-pair{ display:none !important; }
   body.printing-letter .letter-output{ display:block !important; }
 }
+
+/* ============================================================
+   Phase 6 — moderation and small screens
+   ============================================================ */
+.comment-foot{ flex-wrap:wrap; }
+.search input:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+.report-reasons label{ font-weight:500; }

@@ -39,10 +39,10 @@
 
     <div class="comment-foot">
       {% if user.is_authenticated and c.user_id != user.id %}
-        <form method="post" action="{% url 'toggle_like' c.id %}" class="inline-form">
+        <form method="post" action="{% url 'toggle_like' c.id %}" class="inline-form js-like">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path }}#c{{ c.id }}">
-          <button class="link-btn{% if c.id in liked_ids %} liked{% endif %}">Helpful · {{ c.like_count }}</button>
+          <button type="submit" class="link-btn{% if c.id in liked_ids %} liked{% endif %}" aria-pressed="{% if c.id in liked_ids %}true{% else %}false{% endif %}">Helpful · {{ c.like_count }}</button>
         </form>
       {% else %}
         <span>Helpful · {{ c.like_count }}</span>
@@ -61,12 +61,28 @@
         <a href="{% url 'comment_thread' c.id %}">{% if c.is_question %}Join the discussion{% else %}Read in {{ c.country.name }}{% endif %} →</a>
       {% endif %}
 
+      {% if user.is_authenticated and c.user_id != user.id %}
+        {% if c.id in reported_comment_ids %}
+          <span>Reported</span>
+        {% else %}
+          <a href="{% url 'report_comment' c.id %}?next={{ request.get_full_path|urlencode }}">Report</a>
+        {% endif %}
+      {% endif %}
+
       {% if c.user_id == user.id %}
         <a href="{% url 'edit_comment' c.id %}">Edit</a>
+      {% endif %}
+      {% if user.is_staff %}
+        <form method="post" action="{% url 'delete_comment' c.id %}" class="inline-form" onsubmit="return confirm('Remove this post?');">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="link-btn danger">Remove</button>
+        </form>
+      {% elif c.user_id == user.id %}
         <form method="post" action="{% url 'delete_comment' c.id %}" class="inline-form" onsubmit="return confirm('Delete this post?');">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button class="link-btn danger">Delete</button>
+          <button type="submit" class="link-btn danger">Delete</button>
         </form>
       {% endif %}
     </div>

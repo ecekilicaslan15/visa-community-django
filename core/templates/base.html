@@ -56,13 +56,13 @@
         <p style="margin:0;color:#93A5B5">Real visa experiences, shared by real travelers. Community estimates are not official information — always confirm with your consulate.</p>
       </div>
       <div><b style="color:#fff">Explore</b><br><a href="{% url 'home' %}#countries">Countries</a><br><a href="{% url 'stats_overview' %}">Statistics</a><br><a href="{% url 'guides' %}">Guides</a><br><a href="{% url 'insights' %}">Community insights</a><br>{% if user.is_authenticated %}<a href="{% url 'profile' %}">My journal</a>{% else %}<a href="{% url 'accounts:signup' %}">Join</a>{% endif %}<br><a href="{% url 'design_system' %}">Design system</a></div>
-      <div><b style="color:#fff">Community</b><br><a href="#">Guidelines</a><br><a href="#">Privacy</a><br><a href="#">Contact</a></div>
+      <div><b style="color:#fff">Community</b><br><a href="{% url 'guidelines' %}">Guidelines</a><br><a href="{% url 'privacy' %}">Privacy</a><br><a href="{% url 'contact' %}">Contact</a></div>
     </div>
     <div class="mrz">P&lt;VISACOMMUNITY&lt;&lt;TRAVEL&lt;TOGETHER&lt;&lt;APPLY&lt;SMARTER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>VC2026001&lt;&lt;SHARE&lt;EXPERIENCES&lt;&lt;HELP&lt;TRAVELERS&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;06</div>
   </div>
 </footer>
 {% endblock %}
 
-<script src="{% static 'core/js/visacommunity.js' %}?v=5"></script>
+<script src="{% static 'core/js/visacommunity.js' %}?v=6"></script>
 </body>
 </html>

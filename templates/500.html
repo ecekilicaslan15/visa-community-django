@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Something went wrong · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <div class="empty">
+    {% include "partials/buddy.html" with w=140 h=148 pose="suitcase" %}
+    <h1>Something went wrong</h1>
+    <p>This is on our side. Please try again in a moment.</p>
+    <a class="btn btn-primary" href="/#countries">Back to countries</a>
+  </div>
+</div>
+{% endblock %}

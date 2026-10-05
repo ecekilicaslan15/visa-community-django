@@ -278,6 +278,41 @@ document.querySelectorAll(".nav-toggle").forEach(function (btn) {
   });
 })();
 
+// Helpful marks: update the count in place. A normal POST still works if fetch cannot.
+(function () {
+  document.querySelectorAll("form.js-like").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (!window.fetch) return;
+      event.preventDefault();
+      var button = form.querySelector("button");
+      var token = form.querySelector("[name=csrfmiddlewaretoken]");
+      var body = new URLSearchParams(new FormData(form));
+      fetch(form.action, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": token ? token.value : "",
+          "X-Requested-With": "XMLHttpRequest",
+          "Accept": "application/json"
+        },
+        body: body,
+        credentials: "same-origin"
+      }).then(function (response) {
+        var type = response.headers.get("content-type") || "";
+        if (!response.ok || type.indexOf("application/json") === -1) {
+          throw new Error("fallback");
+        }
+        return response.json();
+      }).then(function (data) {
+        button.textContent = "Helpful · " + data.count;
+        button.classList.toggle("liked", !!data.liked);
+        button.setAttribute("aria-pressed", data.liked ? "true" : "false");
+      }).catch(function () {
+        form.submit();
+      });
+    });
+  });
+})();
+
 // Profile tabs — visual filter only
 (function () {
   var tabs = document.querySelector("[data-tabs]");

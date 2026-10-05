@@ -2,15 +2,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.paginator import Paginator
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Avg, Count, Max, Q
-from django.http import HttpResponseNotAllowed
+from django.http import Http404, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .forms import CommentForm, OpeningReportForm, ReplyForm
-from .models import Comment, Country, Reply
+from .forms import CommentForm, ContentReportForm, OpeningReportForm, ReplyForm
+from .limits import HOURLY_POST_MESSAGE, hourly_post_limit_reached
+from .models import Comment, ContentReport, Country, Reply
 from .predictions import predict_next_window
 from .visa_stats import official_snapshot
 
@@ -93,9 +94,14 @@ def home(request):
         Comment.objects.filter(country__is_active=True)
     ).order_by("-created_at")[:3]
 
+    recent = list(recent)
     liked_ids = set()
+    reported_comment_ids = set()
     if request.user.is_authenticated:
         liked_ids = set(request.user.liked_comments.values_list("id", flat=True))
+        reported_comment_ids, _reported_replies = _reported_ids(
+            request.user, [comment.id for comment in recent]
+        )
 
     return render(
         request,
@@ -106,6 +112,7 @@ def home(request):
             "query": query,
             "recent": recent,
             "liked_ids": liked_ids,
+            "reported_comment_ids": reported_comment_ids,
             "first_country": Country.objects.filter(is_active=True).order_by("name").first(),
         },
     )
@@ -152,12 +159,15 @@ def country_detail(request, slug):
             return redirect_to_login(request.get_full_path())
         form = CommentForm(request.POST)
         if form.is_valid():
-            new_comment = form.save(commit=False)
-            new_comment.country = country
-            new_comment.user = request.user
-            new_comment.save()
-            messages.success(request, "Thanks — your post is live.")
-            return redirect("country_detail", slug=slug)
+            if hourly_post_limit_reached(request.user):
+                messages.error(request, HOURLY_POST_MESSAGE)
+            else:
+                new_comment = form.save(commit=False)
+                new_comment.country = country
+                new_comment.user = request.user
+                new_comment.save()
+                messages.success(request, "Thanks — your post is live.")
+                return redirect("country_detail", slug=slug)
     else:
         form = CommentForm(initial={"kind": Comment.KIND_QUESTION})
 
@@ -173,6 +183,14 @@ def report_opening(request, slug):
 
     country = get_object_or_404(Country, slug=slug, is_active=True)
     opening_form = OpeningReportForm(request.POST, user=request.user, country=country)
+    if opening_form.is_valid() and hourly_post_limit_reached(request.user):
+        messages.error(request, HOURLY_POST_MESSAGE)
+        return _render_country(
+            request,
+            country,
+            CommentForm(initial={"kind": Comment.KIND_QUESTION}),
+            opening_form=opening_form,
+        )
     if opening_form.is_valid():
         report = opening_form.save(commit=False)
         report.user = request.user
@@ -204,9 +222,13 @@ def _render_country(request, country, comment_form, opening_form=None):
     comments = Paginator(comment_list, 10).get_page(request.GET.get("page"))
 
     liked_ids = set()
+    reported_comment_ids = set()
     if request.user.is_authenticated:
         liked_ids = set(
             request.user.liked_comments.filter(country=country).values_list("id", flat=True)
+        )
+        reported_comment_ids, _reported_replies = _reported_ids(
+            request.user, [comment.id for comment in comments.object_list]
         )
         if opening_form is None:
             opening_form = OpeningReportForm(user=request.user, country=country)
@@ -227,6 +249,7 @@ def _render_country(request, country, comment_form, opening_form=None):
             "form": comment_form,
             "stats": country_stats(country),
             "liked_ids": liked_ids,
+            "reported_comment_ids": reported_comment_ids,
             "opening_form": opening_form,
             "opening_count": len(opened_on),
             "last_opening": opened_on[0] if opened_on else None,
@@ -236,15 +259,21 @@ def _render_country(request, country, comment_form, opening_form=None):
     )
 
 
-@login_required
 def delete_comment(request, comment_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
 
-    comment = get_object_or_404(Comment, id=comment_id, user=request.user)
+    if request.user.is_staff:
+        comment = get_object_or_404(Comment, id=comment_id)
+        notice = "The post was removed."
+    else:
+        comment = get_object_or_404(Comment, id=comment_id, user=request.user)
+        notice = "Your post was deleted."
     slug = comment.country.slug
     comment.delete()
-    messages.success(request, "Your post was deleted.")
+    messages.success(request, notice)
     return redirect(_next_url(request) or f"/countries/{slug}/")
 
 
@@ -325,23 +354,28 @@ def profile(request):
             "progress": progress,
             "is_community_helper": question_replies >= 10,
             "liked_reply_ids": set(),
+            "reported_comment_ids": set(),
+            "reported_reply_ids": set(),
         },
     )
 
 
-@login_required
 def toggle_like(request, comment_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
 
     comment = get_object_or_404(Comment, id=comment_id)
-
-    if comment.user != request.user:  # kullanici kendi yorumunu likelamasin
+    liked = False
+    if comment.user_id != request.user.id:
         if comment.likes.filter(id=request.user.id).exists():
             comment.likes.remove(request.user)
         else:
             comment.likes.add(request.user)
-
+            liked = True
+    if _wants_json(request):
+        return JsonResponse({"liked": liked, "count": comment.likes.count()})
     return redirect(_next_url(request) or f"/countries/{comment.country.slug}/")
 
 
@@ -370,28 +404,38 @@ def create_reply(request, comment_id):
     )
     form = ReplyForm(request.POST)
     if form.is_valid():
-        reply = form.save(commit=False)
-        reply.comment = comment
-        reply.user = request.user
-        reply.save()
-        messages.success(request, "Your reply is live.")
-        return redirect("comment_thread", comment_id=comment.id)
+        if hourly_post_limit_reached(request.user):
+            messages.error(request, HOURLY_POST_MESSAGE)
+        else:
+            reply = form.save(commit=False)
+            reply.comment = comment
+            reply.user = request.user
+            reply.save()
+            messages.success(request, "Your reply is live.")
+            return redirect("comment_thread", comment_id=comment.id)
     return _render_thread(request, comment, form)
 
 
 def _render_thread(request, comment, form):
-    replies = (
+    replies = list(
         comment.replies.select_related("user")
         .annotate(like_count=Count("likes", distinct=True))
         .order_by("created_at")
     )
     liked_ids = set()
     liked_reply_ids = set()
+    reported_comment_ids = set()
+    reported_reply_ids = set()
     if request.user.is_authenticated:
         if comment.likes.filter(id=request.user.id).exists():
             liked_ids.add(comment.id)
         liked_reply_ids = set(
             request.user.liked_replies.filter(comment=comment).values_list("id", flat=True)
+        )
+        reported_comment_ids, reported_reply_ids = _reported_ids(
+            request.user,
+            [comment.id],
+            [reply.id for reply in replies],
         )
     return render(
         request,
@@ -402,6 +446,8 @@ def _render_thread(request, comment, form):
             "form": form,
             "liked_ids": liked_ids,
             "liked_reply_ids": liked_reply_ids,
+            "reported_comment_ids": reported_comment_ids,
+            "reported_reply_ids": reported_reply_ids,
         },
     )
 
@@ -447,12 +493,116 @@ def toggle_reply_like(request, reply_id):
         return redirect_to_login(request.get_full_path())
 
     reply = get_object_or_404(Reply, id=reply_id)
+    liked = False
     if reply.user_id != request.user.id:
         if reply.likes.filter(id=request.user.id).exists():
             reply.likes.remove(request.user)
         else:
             reply.likes.add(request.user)
+            liked = True
+    if _wants_json(request):
+        return JsonResponse({"liked": liked, "count": reply.likes.count()})
     return redirect(_next_url(request) or f"/comments/{reply.comment_id}/")
+
+
+def report_comment(request, comment_id):
+    """GET shows the reason form. POST files one report on someone else's post."""
+    if request.method not in ("GET", "POST"):
+        return HttpResponseNotAllowed(["GET", "POST"])
+    comment = get_object_or_404(Comment, id=comment_id, country__is_active=True)
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+    if comment.user_id == request.user.id:
+        raise Http404
+    return _file_report(
+        request,
+        comment=comment,
+        fallback=f"/countries/{comment.country.slug}/#c{comment.id}",
+        heading="Report this post",
+        excerpt=comment.text,
+    )
+
+
+def report_reply(request, reply_id):
+    """GET shows the reason form. POST files one report on someone else's reply."""
+    if request.method not in ("GET", "POST"):
+        return HttpResponseNotAllowed(["GET", "POST"])
+    reply = get_object_or_404(
+        Reply.objects.select_related("comment__country"),
+        id=reply_id,
+        comment__country__is_active=True,
+    )
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path())
+    if reply.user_id == request.user.id:
+        raise Http404
+    return _file_report(
+        request,
+        reply=reply,
+        fallback=f"/comments/{reply.comment_id}/#r{reply.id}",
+        heading="Report this reply",
+        excerpt=reply.text,
+    )
+
+
+def _file_report(request, fallback, heading, excerpt, comment=None, reply=None):
+    if request.method == "POST":
+        form = ContentReportForm(request.POST)
+        if form.is_valid():
+            report = ContentReport(
+                reporter=request.user,
+                comment=comment,
+                reply=reply,
+                reason=form.cleaned_data["reason"],
+            )
+            try:
+                with transaction.atomic():
+                    report.save()
+            except IntegrityError:
+                messages.info(request, "You already reported this.")
+            else:
+                messages.success(request, "Thanks — we'll review this report.")
+            return redirect(_next_url(request) or fallback)
+    elif request.method == "GET":
+        form = ContentReportForm()
+    else:
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    return render(
+        request,
+        "core/report.html",
+        {
+            "form": form,
+            "heading": heading,
+            "excerpt": excerpt,
+            "next_url": _next_url(request) or fallback,
+        },
+    )
+
+
+def _reported_ids(user, comment_ids=(), reply_ids=()):
+    """Comment and reply ids this member has already reported."""
+    if not user.is_authenticated:
+        return set(), set()
+    reports = ContentReport.objects.filter(reporter=user)
+    comments = set()
+    replies = set()
+    if comment_ids:
+        comments = set(
+            reports.filter(comment_id__in=comment_ids).values_list("comment_id", flat=True)
+        )
+    if reply_ids:
+        replies = set(
+            reports.filter(reply_id__in=reply_ids).values_list("reply_id", flat=True)
+        )
+    return comments, replies
+
+
+def _wants_json(request):
+    """True when the like button was submitted with fetch instead of a full page load."""
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return True
+    return "application/json" in request.headers.get("accept", "")
 
 
 def _next_url(request):

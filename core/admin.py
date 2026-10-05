@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     Comment,
     ConsulateVisaStat,
+    ContentReport,
     Country,
     CountryVisaStat,
     OpeningReport,
@@ -50,6 +51,16 @@ class ReplyAdmin(admin.ModelAdmin):
         return obj.text[:40]
 
     short_text.short_description = "Reply"
+
+
+@admin.register(ContentReport)
+class ContentReportAdmin(admin.ModelAdmin):
+    list_display = ("id", "reporter", "reason", "comment", "reply", "created_at", "resolved")
+    list_filter = ("reason", "resolved", "created_at")
+    search_fields = ("reporter__username", "comment__text", "reply__text")
+    list_editable = ("resolved",)
+    raw_id_fields = ("reporter", "comment", "reply")
+    ordering = ("-created_at",)
 
 
 @admin.register(OpeningReport)
