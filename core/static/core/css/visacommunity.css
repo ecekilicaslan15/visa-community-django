@@ -630,3 +630,37 @@ fieldset.field label{ display:block; margin:.25rem 0; font-weight:500; }
   .hbar-track{ grid-column:1 / -1; }
   .stat-grid .mini-stat b{ font-size:1.15rem; }
 }
+
+/* ============================================================
+   Phase 5 — letter guides
+   Both languages stay in the page. Buttons only choose one.
+   ============================================================ */
+.guide-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; }
+.guide-card h3{ margin:.35rem 0 .3rem; }
+.guide-card p{ margin:0; color:var(--muted); }
+.do-dont{ display:grid; grid-template-columns:1fr 1fr; gap:.8rem 1.2rem; margin:.4rem 0 1.1rem; }
+.do-dont ul{ margin:.3rem 0 0; padding-left:1.1rem; }
+.letter{
+  white-space:pre-wrap; background:var(--paper); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:1.1rem 1.2rem; margin-top:.8rem;
+  font-size:.95rem; line-height:1.55;
+}
+.letter .pass-label{ display:block; margin-bottom:.7rem; }
+.letter-pair{ margin-top:1rem; }
+.letter-pair.is-enhanced [data-lang-panel="tr"]{ display:none; }
+.letter-pair.is-enhanced.show-tr [data-lang-panel="en"]{ display:none; }
+.letter-pair.is-enhanced.show-tr [data-lang-panel="tr"]{ display:block; }
+.letter-actions{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.8rem; }
+.letter-output{ background:#fff; }
+
+@media (max-width: 640px){
+  .do-dont{ grid-template-columns:1fr; }
+}
+
+@media print{
+  .nav, footer.site, .no-print{ display:none !important; }
+  body{ background:#fff; }
+  .letter{ border:0; background:#fff; }
+  body.printing-letter .letter-pair{ display:none !important; }
+  body.printing-letter .letter-output{ display:block !important; }
+}

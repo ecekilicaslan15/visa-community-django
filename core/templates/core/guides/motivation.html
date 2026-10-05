@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Motivation letter · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap no-print" style="padding:3rem 0 0">
+  <div class="eyebrow">Guides</div>
+  <h1 style="font-size:2.3rem">Motivation letter</h1>
+  <p class="lead muted" style="max-width:42rem">Niyet mektubu, or cover letter: a signed letter to the consulate. It says who you are, why you travel, what the plan is, how you pay, and why you will return.</p>
+</header>
+
+<div class="wrap section" style="padding-top:0">
+  {% include "partials/guide_nav.html" %}
+
+  <div class="tip no-print"><span class="bulb">💡</span><div>Requirements differ per consulate and change over time — always check the current checklist of the consulate / visa centre you apply to. This is general guidance, not legal advice.</div></div>
+
+  <section class="card card-pad no-print" style="margin-top:1.2rem">
+    <h2>What to include</h2>
+    <p>Keep it to one page. Stay factual, and make every date match the bookings and the application form.</p>
+
+    <h3>Header</h3>
+    <p>Your full name, address, phone, and email, then the date, then the consulate you are writing to.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Use the same address as on the form.</li><li>Name the consulate and the city.</li></ul></div>
+      <div><b>Don't</b><ul><li>Leave off the date.</li><li>Write to “the embassy” with no country.</li></ul></div>
+    </div>
+
+    <h3>Subject line</h3>
+    <p>Use this line: “Application for a short-stay Schengen visa”.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Keep the subject to that one sentence.</li></ul></div>
+      <div><b>Don't</b><ul><li>Add a slogan or a plea in the subject.</li></ul></div>
+    </div>
+
+    <h3>Purpose of the trip</h3>
+    <p>Say why you are going, in one or two plain sentences.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Name tourism, a family visit, study, or a named fair.</li></ul></div>
+      <div><b>Don't</b><ul><li>Write only “for tourism” with no plan.</li></ul></div>
+    </div>
+
+    <h3>Dates and itinerary</h3>
+    <p>Give the exact travel dates and where you will be on which days. The main destination is the country where you stay the longest. If two stays are equal, it is the country where you enter the Schengen area first.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Match the flights and the hotel nights.</li></ul></div>
+      <div><b>Don't</b><ul><li>Change a date between the letter and the form.</li></ul></div>
+    </div>
+
+    <h3>Accommodation</h3>
+    <p>Name where you will sleep: hotel, or a host’s address if someone is inviting you.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Give the name and city of each stay.</li></ul></div>
+      <div><b>Don't</b><ul><li>Leave a night unaccounted for.</li></ul></div>
+    </div>
+
+    <h3>Financing</h3>
+    <p>Say who pays: you, or a named sponsor. Point to the bank statements or the sponsorship letter.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Use the same amounts as the statements.</li></ul></div>
+      <div><b>Don't</b><ul><li>Claim savings the statements do not show.</li></ul></div>
+    </div>
+
+    <h3>Ties to Türkiye and the return plan</h3>
+    <p>Job or school, family, and property if you have them, plus the day you go back to work or class.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Name the employer or the university.</li></ul></div>
+      <div><b>Don't</b><ul><li>Promise you will “definitely return” with no fact behind it.</li></ul></div>
+    </div>
+
+    <h3>Enclosed documents</h3>
+    <p>List what is in the file, in the same order as the stack.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Include only documents you actually attach.</li></ul></div>
+      <div><b>Don't</b><ul><li>List a paper that is not in the envelope.</li></ul></div>
+    </div>
+
+    <h3>Signature</h3>
+    <p>Sign by hand if the consulate asks for a wet signature. An unsigned letter is incomplete.</p>
+    <div class="do-dont">
+      <div><b>Do</b><ul><li>Sign the same name as the passport.</li></ul></div>
+      <div><b>Don't</b><ul><li>Send the letter without a signature.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="card card-pad no-print" style="margin-top:1.2rem">
+    <h2>Common mistakes</h2>
+    <ul>
+      <li>Copy-paste templates that still contain someone else’s city or dates.</li>
+      <li>Dates that do not match the bookings.</li>
+      <li>A vague purpose.</li>
+      <li>An unsigned letter.</li>
+      <li>Too much emotion, and too few facts.</li>
+      <li>A letter that contradicts the application form.</li>
+    </ul>
+  </section>
+
+  <section class="no-print" style="margin-top:1.6rem">
+    <h2>Examples</h2>
+    <p class="muted">Every name, address, phone number, and company below is invented. Both languages are on this page. The buttons only choose which one is shown.</p>
+
+    <article class="card card-pad letter-pair" data-letter-pair>
+      <h3>Tourism, employed applicant</h3>
+      <div class="seg" data-lang-seg role="group" aria-label="Letter language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="tr" aria-pressed="false">Türkçe</button>
+      </div>
+      <div class="letter" data-lang-panel="en" lang="en"><span class="pass-label">English</span>
+Ayşe Yılmaz
+Atatürk Cad. No 10, Kadıköy, Istanbul, Türkiye
++90 555 010 0199
+ayse.yilmaz.example@email.com
+
+15 March 2026
+
+Consulate General of the French Republic
+Istanbul
+
+Subject: Application for a short-stay Schengen visa
+
+Dear Consul,
+
+I am applying for a short-stay Schengen visa to visit Paris and Lyon from 4 June 2026 to 14 June 2026. I work as an accountant at Örnek Muhasebe Ltd. in Istanbul, and I have been employed there since 2019.
+
+The purpose of the trip is tourism. I will spend seven nights in Paris, from 4 June to 11 June, and three nights in Lyon, from 11 June to 14 June. France is my main destination because I stay there the longest. I will fly back to Istanbul on 14 June 2026.
+
+I have a room at Hôtel Exemple, 12 Rue Imaginaire, 75011 Paris, for 4–11 June, and at Hôtel Exemple Lyon, 4 Quai Fictif, for 11–14 June. I am paying for the trip myself from my salary. Bank statements for the last three months are enclosed.
+
+I return to work on 15 June 2026. My employer has approved the leave. My parents live in Istanbul, and my employment contract is open-ended.
+
+Enclosed documents:
+1. Passport
+2. Employment letter and leave approval
+3. Payslips and bank statements
+4. Hotel reservations
+5. Return flight reservation
+6. Travel insurance
+
+Yours faithfully,
+Ayşe Yılmaz</div>
+      <div class="letter" data-lang-panel="tr" lang="tr"><span class="pass-label">Türkçe</span>
+Ayşe Yılmaz
+Atatürk Cad. No 10, Kadıköy, İstanbul, Türkiye
++90 555 010 0199
+ayse.yilmaz.example@email.com
+
+15 Mart 2026
+
+Fransa Cumhuriyeti Başkonsolosluğu
+İstanbul
+
+Konu: Kısa süreli Schengen vizesi başvurusu
+
+Sayın Konsolos,
+
+4 Haziran 2026 ile 14 Haziran 2026 tarihleri arasında Paris ve Lyon’u ziyaret etmek için kısa süreli Schengen vizesine başvuruyorum. İstanbul’da Örnek Muhasebe Ltd. şirketinde muhasebeci olarak çalışıyorum; 2019’dan beri bu işteyim.
+
+Seyahatin amacı turizmdir. Yedi gece Paris’te (4–11 Haziran), üç gece Lyon’da (11–14 Haziran) kalacağım. En uzun süre Fransa’da kalacağım için ana varış ülkem Fransa’dır. 14 Haziran 2026’da İstanbul’a döneceğim.
+
+4–11 Haziran için Paris’te Hôtel Exemple, 12 Rue Imaginaire, 75011 Paris adresinde; 11–14 Haziran için Lyon’da Hôtel Exemple Lyon, 4 Quai Fictif adresinde oda ayırttım. Masrafları kendi maaşımdan karşılıyorum. Son üç aya ait banka hesap özetlerim ektedir.
+
+15 Haziran 2026’da işime döneceğim. İşverenim iznimi onayladı. Ailem İstanbul’da yaşıyor ve iş sözleşmem belirsiz sürelidir.
+
+Ekli belgeler:
+1. Pasaport
+2. İşveren yazısı ve izin onayı
+3. Maaş bordroları ve banka hesap özetleri
+4. Otel rezervasyonları
+5. Dönüş uçak rezervasyonu
+6. Seyahat sağlık sigortası
+
+Saygılarımla,
+Ayşe Yılmaz</div>
+    </article>
+
+    <article class="card card-pad letter-pair" data-letter-pair>
+      <h3>University student, parent as sponsor</h3>
+      <div class="seg" data-lang-seg role="group" aria-label="Letter language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="tr" aria-pressed="false">Türkçe</button>
+      </div>
+      <div class="letter" data-lang-panel="en" lang="en"><span class="pass-label">English</span>
+Deniz Kaya
+Örnek University, student dormitory B, Beşiktaş, Istanbul, Türkiye
++90 555 010 0288
+deniz.kaya.example@email.com
+
+2 April 2026
+
+Consulate General of the Italian Republic
+Istanbul
+
+Subject: Application for a short-stay Schengen visa
+
+Dear Consul,
+
+I am a second-year economics student at Örnek University in Istanbul. I am applying for a short-stay visa to visit Rome from 20 July 2026 to 30 July 2026. The purpose is tourism during the summer break.
+
+I will stay ten nights at Guesthouse Exemple, Via Immaginaria 8, Rome. Italy is my only destination. I fly to Rome on 20 July and back to Istanbul on 30 July 2026. Classes resume on 14 September 2026.
+
+I do not have my own income. My father, Mehmet Kaya, will pay for the flights, the room, living costs, and insurance. His sponsorship letter, bank statements, and proof of our relationship are enclosed.
+
+I live with my family in Istanbul when I am not in the dormitory, and I will continue my degree after the trip.
+
+Enclosed documents:
+1. Passport
+2. Student certificate
+3. Sponsorship letter from Mehmet Kaya
+4. Sponsor’s bank statements and employment letter
+5. Civil registry record showing the relationship
+6. Hotel reservation, return flight, and travel insurance
+
+Yours faithfully,
+Deniz Kaya</div>
+      <div class="letter" data-lang-panel="tr" lang="tr"><span class="pass-label">Türkçe</span>
+Deniz Kaya
+Örnek Üniversitesi, öğrenci yurdu B, Beşiktaş, İstanbul, Türkiye
++90 555 010 0288
+deniz.kaya.example@email.com
+
+2 Nisan 2026
+
+İtalya Cumhuriyeti Başkonsolosluğu
+İstanbul
+
+Konu: Kısa süreli Schengen vizesi başvurusu
+
+Sayın Konsolos,
+
+İstanbul’daki Örnek Üniversitesi’nde iktisat bölümü ikinci sınıf öğrencisiyim. Yaz tatilinde, 20 Temmuz 2026 ile 30 Temmuz 2026 tarihleri arasında Roma’yı ziyaret etmek için kısa süreli vizeye başvuruyorum. Amaç turizmdir.
+
+On gece Roma’da Guesthouse Exemple, Via Immaginaria 8 adresinde kalacağım. Tek varış ülkem İtalya’dır. 20 Temmuz’da Roma’ya gidecek, 30 Temmuz 2026’da İstanbul’a döneceğim. Dersler 14 Eylül 2026’da başlıyor.
+
+Kendi gelirim yok. Uçak, konaklama, günlük masraflar ve sigortayı babam Mehmet Kaya karşılayacak. Sponsorluk yazısı, banka hesap özetleri ve akrabalık belgesi ektedir.
+
+Yurt dışında kaldığım dönem dışında ailemle İstanbul’da yaşıyorum ve seyahatten sonra öğrenimime devam edeceğim.
+
+Ekli belgeler:
+1. Pasaport
+2. Öğrenci belgesi
+3. Mehmet Kaya’nın sponsorluk yazısı
+4. Sponsorun banka hesap özetleri ve işveren yazısı
+5. Akrabalık gösteren nüfus kayıt örneği
+6. Otel rezervasyonu, dönüş uçağı ve seyahat sigortası
+
+Saygılarımla,
+Deniz Kaya</div>
+    </article>
+
+    <article class="card card-pad letter-pair" data-letter-pair>
+      <h3>Business trip, trade fair</h3>
+      <div class="seg" data-lang-seg role="group" aria-label="Letter language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="tr" aria-pressed="false">Türkçe</button>
+      </div>
+      <div class="letter" data-lang-panel="en" lang="en"><span class="pass-label">English</span>
+Emre Demir
+Örnek Ticaret A.Ş.
+Maslak Mah. Örnek Sok. No 1, Sarıyer, Istanbul, Türkiye
++90 555 010 0377
+emre.demir.example@email.com
+
+1 September 2026
+
+Consulate General of the Federal Republic of Germany
+Istanbul
+
+Subject: Application for a short-stay Schengen visa
+
+Dear Consul,
+
+I am the sales manager of Örnek Ticaret A.Ş. in Istanbul. I am applying for a short-stay visa to attend the Exemple Trade Fair in Frankfurt from 9 September 2026 to 12 September 2026. My employer is sending me to meet existing customers at our stand, hall 4, stand E12.
+
+I fly to Frankfurt on 8 September and back to Istanbul on 13 September 2026. I will stay at Hotel Exemple Frankfurt, Musterstrasse 5, on the nights of 8, 9, 10, 11, and 12 September. Germany is my only destination. I will be back at the office on 14 September 2026.
+
+The company pays for the flight, the hotel, and a daily allowance. The invitation from the fair, the company letter, and the trade-registry extract are enclosed. I have an open-ended contract with Örnek Ticaret A.Ş. since 2018.
+
+Enclosed documents:
+1. Passport
+2. Company letter and leave approval
+3. Fair registration and stand confirmation
+4. Hotel reservation and return flight
+5. Travel insurance
+6. Trade-registry extract
+
+Yours faithfully,
+Emre Demir</div>
+      <div class="letter" data-lang-panel="tr" lang="tr"><span class="pass-label">Türkçe</span>
+Emre Demir
+Örnek Ticaret A.Ş.
+Maslak Mah. Örnek Sok. No 1, Sarıyer, İstanbul, Türkiye
++90 555 010 0377
+emre.demir.example@email.com
+
+1 Eylül 2026
+
+Almanya Federal Cumhuriyeti Başkonsolosluğu
+İstanbul
+
+Konu: Kısa süreli Schengen vizesi başvurusu
+
+Sayın Konsolos,
+
+İstanbul’daki Örnek Ticaret A.Ş. şirketinin satış müdürüyüm. 9 Eylül 2026 ile 12 Eylül 2026 tarihleri arasında Frankfurt’taki Exemple Trade Fair fuarına katılmak için kısa süreli vizeye başvuruyorum. İşverenim beni, 4. hol E12 numaralı standımızda mevcut müşterilerle görüşmem için gönderiyor.
+
+8 Eylül’de Frankfurt’a gidecek, 13 Eylül 2026’da İstanbul’a döneceğim. 8, 9, 10, 11 ve 12 Eylül geceleri Hotel Exemple Frankfurt, Musterstrasse 5 adresinde kalacağım. Tek varış ülkem Almanya’dır. 14 Eylül 2026’da ofiste olacağım.
+
+Uçak, otel ve gündelik ödeme şirkete aittir. Fuardan gelen davet, şirket yazısı ve ticaret sicil gazetesi ektedir. Örnek Ticaret A.Ş. ile 2018’den beri belirsiz süreli sözleşmem vardır.
+
+Ekli belgeler:
+1. Pasaport
+2. Şirket yazısı ve izin onayı
+3. Fuar kaydı ve stand teyidi
+4. Otel rezervasyonu ve dönüş uçağı
+5. Seyahat sigortası
+6. Ticaret sicil gazetesi
+
+Saygılarımla,
+Emre Demir</div>
+    </article>
+  </section>
+
+  <section class="card card-pad" id="letter-builder" style="margin-top:1.2rem" aria-label="Motivation letter generator">
+    <div class="no-print">
+      <h2>Write a first draft</h2>
+      <p class="muted">This stays in your browser. Nothing you type is sent or saved. Empty boxes become placeholders such as [Full name].</p>
+      <div data-letter-builder data-kind="motivation">
+        <div class="seg" data-output-lang role="group" aria-label="Draft language">
+          <button type="button" data-lang="en" aria-pressed="true">English</button>
+          <button type="button" data-lang="tr" aria-pressed="false">Türkçe</button>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="m-name">Your full name</label><input class="input" id="m-name" data-field="applicant_name" autocomplete="off"></div>
+          <div class="field"><label for="m-date">Date of the letter</label><input class="input" id="m-date" data-field="letter_date" autocomplete="off"></div>
+        </div>
+        <div class="field"><label for="m-address">Your address</label><input class="input" id="m-address" data-field="address" autocomplete="off"></div>
+        <div class="field"><label for="m-consulate">Consulate you are writing to</label><input class="input" id="m-consulate" data-field="consulate" autocomplete="off"></div>
+        <div class="field"><label for="m-purpose">Purpose of the trip</label><input class="input" id="m-purpose" data-field="purpose" autocomplete="off"></div>
+        <div class="field-row">
+          <div class="field"><label for="m-depart">Departure date</label><input class="input" id="m-depart" data-field="depart" autocomplete="off"></div>
+          <div class="field"><label for="m-return">Return date</label><input class="input" id="m-return" data-field="return_on" autocomplete="off"></div>
+        </div>
+        <div class="field"><label for="m-itinerary">Dates and itinerary</label><textarea class="input" id="m-itinerary" data-field="itinerary" rows="3"></textarea></div>
+        <div class="field"><label for="m-stay">Accommodation</label><textarea class="input" id="m-stay" data-field="accommodation" rows="2"></textarea></div>
+        <div class="field"><label for="m-pay">How you will pay</label><textarea class="input" id="m-pay" data-field="financing" rows="2"></textarea></div>
+        <div class="field"><label for="m-ties">Ties to Türkiye and your return plan</label><textarea class="input" id="m-ties" data-field="ties" rows="2"></textarea></div>
+        <div class="field"><label for="m-docs">Enclosed documents</label><textarea class="input" id="m-docs" data-field="documents" rows="3"></textarea></div>
+        <button class="btn btn-primary btn-sm" type="button" data-write>Write the letter</button>
+        <div data-result hidden>
+          <div class="letter-actions">
+            <button class="btn btn-ghost btn-sm" type="button" data-copy>Copy</button>
+            <button class="btn btn-ghost btn-sm" type="button" data-print>Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <article class="letter letter-output" data-output hidden></article>
+  </section>
+</div>
+{% endblock %}

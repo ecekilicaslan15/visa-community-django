@@ -83,6 +83,7 @@
           <button class="btn btn-primary" type="submit">Post to community</button>
           <span class="note">Be kind and specific — no personal documents, please.</span>
         </div>
+        <p class="muted small" style="margin:.9rem 0 0"><a href="{% url 'motivation_letter' %}">Need a motivation letter? → Guide</a></p>
       </form>
     </section>
     {% else %}
@@ -98,6 +99,7 @@
           <a class="btn btn-ghost btn-sm" href="{% url 'accounts:signup' %}">Create account</a>
         </div>
       </div>
+      <p class="muted small" style="margin:.9rem 0 0"><a href="{% url 'motivation_letter' %}">Need a motivation letter? → Guide</a></p>
     </section>
     {% endif %}
 

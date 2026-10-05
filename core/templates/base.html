@@ -17,6 +17,7 @@
     <div class="nav-links">
       <a href="{% url 'home' %}#countries" {% if url_name == 'home' or url_name == 'country_detail' %}class="active"{% endif %}>Countries</a>
       <a href="{% url 'stats_overview' %}" {% if url_name == 'stats_overview' or url_name == 'stats_refusals' or url_name == 'stats_cascade' or url_name == 'stats_appointments' or url_name == 'insights' %}class="active"{% endif %}>Statistics</a>
+      <a href="{% url 'guides' %}" {% if url_name == 'guides' or url_name == 'motivation_letter' or url_name == 'sponsorship_letter' %}class="active"{% endif %}>Guides</a>
       {% if user.is_authenticated %}
         <a href="{% url 'profile' %}" {% if url_name == 'profile' %}class="active"{% endif %}>My journal</a>
       {% endif %}
@@ -54,7 +55,7 @@
         <div class="brand" style="margin-bottom:.5rem">{% include "partials/logo.html" %} VisaCommunity</div>
         <p style="margin:0;color:#93A5B5">Real visa experiences, shared by real travelers. Community estimates are not official information — always confirm with your consulate.</p>
       </div>
-      <div><b style="color:#fff">Explore</b><br><a href="{% url 'home' %}#countries">Countries</a><br><a href="{% url 'stats_overview' %}">Statistics</a><br><a href="{% url 'insights' %}">Community insights</a><br>{% if user.is_authenticated %}<a href="{% url 'profile' %}">My journal</a>{% else %}<a href="{% url 'accounts:signup' %}">Join</a>{% endif %}<br><a href="{% url 'design_system' %}">Design system</a></div>
+      <div><b style="color:#fff">Explore</b><br><a href="{% url 'home' %}#countries">Countries</a><br><a href="{% url 'stats_overview' %}">Statistics</a><br><a href="{% url 'guides' %}">Guides</a><br><a href="{% url 'insights' %}">Community insights</a><br>{% if user.is_authenticated %}<a href="{% url 'profile' %}">My journal</a>{% else %}<a href="{% url 'accounts:signup' %}">Join</a>{% endif %}<br><a href="{% url 'design_system' %}">Design system</a></div>
       <div><b style="color:#fff">Community</b><br><a href="#">Guidelines</a><br><a href="#">Privacy</a><br><a href="#">Contact</a></div>
     </div>
     <div class="mrz">P&lt;VISACOMMUNITY&lt;&lt;TRAVEL&lt;TOGETHER&lt;&lt;APPLY&lt;SMARTER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>VC2026001&lt;&lt;SHARE&lt;EXPERIENCES&lt;&lt;HELP&lt;TRAVELERS&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;06</div>
@@ -62,6 +63,6 @@
 </footer>
 {% endblock %}
 
-<script src="{% static 'core/js/visacommunity.js' %}"></script>
+<script src="{% static 'core/js/visacommunity.js' %}?v=5"></script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+{% with url_name=request.resolver_match.url_name %}
+<nav class="tabs" aria-label="Guides">
+  <a href="{% url 'guides' %}" {% if url_name == 'guides' %}aria-selected="true"{% endif %}>All guides</a>
+  <a href="{% url 'motivation_letter' %}" {% if url_name == 'motivation_letter' %}aria-selected="true"{% endif %}>Motivation letter</a>
+  <a href="{% url 'sponsorship_letter' %}" {% if url_name == 'sponsorship_letter' %}aria-selected="true"{% endif %}>Sponsorship letter</a>
+</nav>
+{% endwith %}

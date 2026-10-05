@@ -75,6 +75,27 @@
   </div>
 </section>
 
+<section class="section" style="padding-top:.4rem">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Guides</div><h2>Letters consulates ask for</h2></div>
+      <a class="btn btn-ghost btn-sm" href="{% url 'guides' %}">All guides</a>
+    </div>
+    <div class="guide-grid">
+      <a class="card card-hover card-pad guide-card" href="{% url 'motivation_letter' %}">
+        <div class="pass-label">Cover letter</div>
+        <h3>Motivation letter</h3>
+        <p>Who you are, why you travel, how you pay, and why you will return.</p>
+      </a>
+      <a class="card card-hover card-pad guide-card" href="{% url 'sponsorship_letter' %}">
+        <div class="pass-label">Sponsor</div>
+        <h3>Sponsorship letter</h3>
+        <p>When someone else pays for the trip, and what that letter must say.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
 {% if recent %}
 <section class="section" style="padding-top:.5rem">
   <div class="wrap">

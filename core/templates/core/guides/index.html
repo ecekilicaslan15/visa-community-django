@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Guides · VisaCommunity{% endblock %}
+
+{% block content %}
+<header class="wrap" style="padding:3rem 0 0">
+  <div class="eyebrow">Guides</div>
+  <h1 style="font-size:2.3rem">Letters consulates ask for</h1>
+  <p class="lead muted" style="max-width:40rem">How to write a motivation letter and a sponsorship letter, with invented examples in English and Turkish.</p>
+</header>
+<div class="wrap section" style="padding-top:0">
+  {% include "partials/guide_nav.html" %}
+  <div class="tip"><span class="bulb">💡</span><div>Requirements differ per consulate and change over time — always check the current checklist of the consulate / visa centre you apply to. This is general guidance, not legal advice.</div></div>
+  <div class="guide-grid" style="margin-top:1.2rem">
+    <a class="card card-hover card-pad guide-card" href="{% url 'motivation_letter' %}">
+      <div class="pass-label">Niyet mektubu</div>
+      <h3>Motivation letter</h3>
+      <p>A signed letter that explains the trip, the dates, the money, and why you will come back to Türkiye.</p>
+    </a>
+    <a class="card card-hover card-pad guide-card" href="{% url 'sponsorship_letter' %}">
+      <div class="pass-label">Sponsorluk dilekçesi</div>
+      <h3>Sponsorship letter</h3>
+      <p>A letter from a parent, spouse, or employer who will pay for the trip.</p>
+    </a>
+  </div>
+</div>
+{% endblock %}
