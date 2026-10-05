@@ -58,7 +58,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # Project templates win over django.contrib.admin's registration pages.
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,3 +124,13 @@ STATIC_URL = 'static/'
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Username or email. ModelBackend stays as a fallback for username logins.
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Development: password-reset mail is printed in the runserver console.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "VisaCommunity <noreply@localhost>"

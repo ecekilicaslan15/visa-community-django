@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load accounts_tags %}
+
+{% block title %}Account settings · VisaCommunity{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <div class="eyebrow">Account</div>
+  <h1 style="font-size:2rem">Account settings</h1>
+  <p class="muted">You appear in the community as <b>{{ user|display_name }}</b></p>
+
+  <div class="settings-stack">
+    <div class="card card-pad">
+      <h2>Profile</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="field-row">
+          <div class="field">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+          </div>
+          <div class="field">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+          </div>
+        </div>
+        <div class="field">
+          {{ form.email.label_tag }}
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+        <button class="btn btn-primary" type="submit">Save changes</button>
+      </form>
+    </div>
+
+    <div class="card card-pad">
+      <h2>Password</h2>
+      <p class="muted">Choose a new password. You'll stay signed in here.</p>
+      <a class="btn btn-ghost" href="{% url 'password_change' %}">Change password</a>
+    </div>
+
+    <div class="card card-pad">
+      <h2>Delete account</h2>
+      <p>This permanently deletes your account and everything you posted. It can't be undone.</p>
+      <form method="post" action="{% url 'accounts:delete_account' %}" novalidate>
+        {% csrf_token %}
+        <div class="field">
+          {{ delete_form.username.label_tag }}
+          {{ delete_form.username }}
+          {{ delete_form.username.errors }}
+        </div>
+        <button class="btn btn-ghost" type="submit">Delete my account</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

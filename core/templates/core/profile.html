@@ -1,12 +1,14 @@
 {% extends "base.html" %}
+{% load accounts_tags %}
 
 {% block title %}My travel journal · VisaCommunity{% endblock %}
 
 {% block content %}
 <header class="wrap profile-head">
-  <span class="avatar">{{ user.username|slice:":2"|upper }}</span>
+  <span class="avatar {{ user|avatar_class }}">{{ user|initials }}</span>
   <div>
-    <h1 style="font-size:1.9rem;margin-bottom:.25rem">{{ user.get_full_name|default:user.username }}</h1>
+    <h1 style="font-size:1.9rem;margin-bottom:.25rem">{{ user|display_name }}</h1>
+    <p style="margin:.15rem 0 .35rem"><a href="{% url 'accounts:settings' %}">Account settings</a></p>
     <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
       <span class="level">{{ level }}</span>
       <span class="level-progress">

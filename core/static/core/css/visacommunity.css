@@ -557,3 +557,11 @@ footer.site a{ color:#D6DEE6; }
 .ledger .country-cell .sticker{ display:inline-flex; }      /* `.country-cell span{display:block}` was overriding it */
 .ledger .country-cell:hover{ text-decoration:none; }
 .hero-buddy .float-stamp.b{ bottom:22%; }                    /* keep the stamp off the caption */
+
+/* ============================================================
+   Phase 1 — accounts
+   Fourth avatar colour, and the account settings stack.
+   ============================================================ */
+.avatar.a4{ background:var(--amber); }
+.settings-stack{ display:flex; flex-direction:column; gap:1.2rem; max-width:40rem; }
+.settings-stack h2{ font-size:1.25rem; }

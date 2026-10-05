@@ -1,3 +1,4 @@
+{% load accounts_tags %}
 {% comment %}
   One timeline entry. Context:
     c            — the Comment (with .like_count annotated)
@@ -20,8 +21,8 @@
       {% if on_profile %}
         <div class="who"><b>{{ c.country.name }}</b><span>{% if c.is_experience %}shared{% else %}asked{% endif %} {{ c.created_at|timesince }} ago</span></div>
       {% else %}
-        <span class="avatar">{{ c.user.username|slice:":2"|upper }}</span>
-        <div class="who"><b>{{ c.user.username }}</b><span>{% if in_feed %}{{ c.country.name }} · {% if c.is_experience %}shared{% else %}asked{% endif %} {% endif %}{{ c.created_at|timesince }} ago</span></div>
+        <span class="avatar {{ c.user|avatar_class }}">{{ c.user|initials }}</span>
+        <div class="who"><b>{{ c.user|display_name }}</b><span>{% if in_feed %}{{ c.country.name }} · {% if c.is_experience %}shared{% else %}asked{% endif %} {% endif %}{{ c.created_at|timesince }} ago</span></div>
       {% endif %}
       <div class="right">
         {% if c.is_question %}<span class="tag-question">Question</span>

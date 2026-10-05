@@ -16,7 +16,7 @@
         {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
 
         <div class="field">
-          <label for="id_username">Username</label>
+          <label for="id_username">Username or email</label>
           <input id="id_username" name="username" class="input" autocomplete="username" autofocus required value="{{ form.username.value|default:'' }}">
           {{ form.username.errors }}
         </div>
@@ -28,6 +28,7 @@
         <button class="btn btn-primary btn-block" type="submit">Sign in</button>
       </form>
 
+      <p class="auth-alt"><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
       <p class="auth-alt">New here? <a href="{% url 'accounts:signup' %}">Create an account</a> — it takes a minute.</p>
     </div>
   </div>
